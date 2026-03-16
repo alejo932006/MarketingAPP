@@ -1,0 +1,17 @@
+# Dependencias de Node (¡Lo más pesado!)
+node_modules/
+generador-reels/node_modules/
+
+# Archivos de entorno (Variables de base de datos)
+.env
+
+# Archivos multimedia generados (No subir los videos renderizados)
+*.mp4
+generador-reels/out/
+public/oferta.mp4
+
+# Archivos temporales de datos que genera nuestro panel
+generador-reels/datos-video.json
+
+# Logs de errores
+npm-debug.log*
