@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; padding: 0;
+            width: 1080px; 
+            /* El height y padding lo inyectaremos directo en el HTML */
+            font-family: 'Poppins', sans-serif;
+            display: flex; flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+            position: relative;
+            
+            /* EFECTO DE RAYOS Y DEGRADADO DE FONDO */
+            background: 
+                repeating-conic-gradient(
+                    from 0deg at 50% -10%,
+                    rgba(255, 255, 255, 0.06) 0deg 4deg,
+                    transparent 4deg 8deg
+                ),
+                radial-gradient(circle at 50% 30%, #E60000 0%, #800000 100%);
+        }
+
+        /* --- TEXTURA PREMIUM (Granulado/Noise) --- */
+        body::after {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            /* Inyectamos un SVG de ruido estático generado matemáticamente */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.12; /* Súper sutil, casi invisible pero hace la diferencia */
+            pointer-events: none; z-index: 9999; /* Flota sobre todo */
+            mix-blend-mode: multiply; /* Se fusiona elegantemente con el fondo rojo */
+        }
+
+        /* --- DECORACIONES FLOTANTES --- */
+        .decor { position: absolute; z-index: 1; pointer-events: none; }
+        .star1 { top: 8%; left: 8%; font-size: 50px; color: #FFC300; transform: rotate(15deg); text-shadow: 0 0 15px rgba(255,195,0,0.5); }
+        .star2 { top: 22%; right: 6%; font-size: 35px; color: white; opacity: 0.6; transform: rotate(45deg); }
+        .circle1 { bottom: 18%; left: 6%; width: 25px; height: 25px; background: #FFC300; border-radius: 50%; box-shadow: 0 0 10px rgba(255,195,0,0.5); }
+        .circle2 { top: 40%; right: 4%; width: 15px; height: 15px; background: white; border-radius: 50%; opacity: 0.5; }
+        .circle3 { bottom: 35%; right: 8%; width: 20px; height: 20px; border: 4px solid #FFC300; border-radius: 50%; opacity: 0.8; }
+        
+        /* --- CABECERA --- */
+        .header {
+            width: 100%; text-align: center;
+            padding: 50px 0 10px 0;
+            z-index: 2; position: relative;
+        }
+        .tagline {
+            background: #FFC300; color: #111;
+            padding: 8px 35px; border-radius: 50px;
+            font-size: 24px; font-weight: 900;
+            text-transform: uppercase; letter-spacing: 4px;
+            display: inline-block; margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .header h1 {
+            color: #ffffff; font-size: 90px; font-weight: 900;
+            margin: 0; text-transform: uppercase;
+            line-height: 1; text-shadow: 0 8px 20px rgba(0,0,0,0.5);
+            letter-spacing: -2px;
+        }
+        .header h1 span { color: #FFC300; }
+
+        /* --- GRILLA DE PRODUCTOS --- */
+        .grid-container {
+            display: flex; justify-content: center; align-items: center;
+            flex: 1; 
+            width: 100%;
+            padding: 10px 0 40px 0; /* padding-bottom crea el espacio que faltaba abajo */
+            z-index: 2; position: relative;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px; /* Separación ampliada entre tarjetas */
+            width: 960px;
+        }
+
+        /* --- TARJETAS MEJORADAS (Efecto Cupón Brutal) --- */
+        .card {
+            background: #ffffff; border-radius: 30px; 
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: space-between;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.5);
+            position: relative; overflow: hidden;
+            
+            /* EL TRAZO PUNTEADO QUE PEDISTE */
+            border: 6px dashed #000000; 
+        }
+
+        /* Efecto de resplandor interno en la tarjeta */
+        .card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 150px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.04) 0%, transparent 100%);
+            z-index: 0; pointer-events: none;
+        }
+        
+        .badge-descuento {
+            position: absolute; top: 15px; left: 15px;
+            background: linear-gradient(135deg, #FFC300 0%, #FF9800 100%);
+            color: #111; width: 95px; height: 95px;
+            border-radius: 50%; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            transform: rotate(-10deg); z-index: 10;
+            border: 4px solid #fff;
+        }
+        .badge-descuento span { font-weight: 900; font-size: 34px; line-height: 1; }
+        .badge-descuento small { font-size: 14px; font-weight: 800; line-height: 1; margin-top: -2px; }
+
+        .img-container {
+            width: 100%; height: 250px;
+            display: flex; justify-content: center; align-items: center;
+            padding: 20px; z-index: 1;
+        }
+        .foto-producto {
+            max-width: 100%; max-height: 100%;
+            object-fit: contain; 
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.15)); /* Sombra a los productos */
+        }
+
+        .info-container {
+            width: 100%; display: flex; flex-direction: column;
+            align-items: center; z-index: 1;
+        }
+        .nombre-producto {
+            font-size: 24px; color: #222; font-weight: 800;
+            text-align: center; margin: 0; padding: 0 20px 15px 20px;
+            line-height: 1.2; height: 75px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .precios-wrapper {
+            width: 100%; background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 15px 10px 20px 10px;
+            text-align: center; border-top: 2px dashed #ccc;
+        }
+        .precio-antes {
+            color: #888; font-size: 22px; font-weight: 600;
+            text-decoration: line-through; margin-bottom: -2px;
+        }
+        .precio-ahora {
+            color: #E60000; font-size: 55px; font-weight: 900;
+            line-height: 1; letter-spacing: -2px; text-shadow: 0 2px 5px rgba(230,0,0,0.15);
+        }
+        .precio-ahora span { font-size: 28px; vertical-align: super; }
+
+        /* --- NUEVO FOOTER (Anti-Colisiones) --- */
+        .footer-wrapper {
+            background: #111;
+            width: 100%;
+            padding: 25px 35px 35px 35px; /* Un poco menos de margen a los lados */
+            display: flex; 
+            align-items: center;
+            justify-content: space-between;
+            border-top: 8px solid #FFC300;
+            border-top-left-radius: 40px;
+            border-top-right-radius: 40px;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+            z-index: 10; position: relative;
+        }
+
+        /* Creamos 3 zonas exactas para que nunca se toquen */
+        .footer-left { flex: 1; display: flex; justify-content: flex-start; }
+        .footer-center { flex: 1; display: flex; justify-content: center; }
+        .footer-right { flex: 1; display: flex; justify-content: flex-end; }
+
+        /* Teléfono a la izquierda */
+        .contact-pill {
+            display: flex; align-items: center; gap: 10px;
+            color: #fff; font-size: 20px; font-weight: 500;
+            white-space: nowrap; 
+        }
+        .contact-pill strong { color: #FFC300; font-weight: 900; font-size: 26px; }
+        .contact-pill .icon {
+            background: #25D366; color: white;
+            width: 45px; height: 45px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.4);
+        }
+
+        /* Botón Web (Siempre en el centro) */
+        .web-btn {
+            background: linear-gradient(135deg, #E60000 0%, #B30000 100%);
+            color: #fff; padding: 10px 25px; border-radius: 50px;
+            font-size: 22px; font-weight: 800; border: 3px solid #FFC300;
+            box-shadow: 0 8px 25px rgba(230,0,0,0.6);
+            display: flex; align-items: center; gap: 8px;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        /* Logo Surtitodo a la derecha */
+        .footer-logo-img {
+            height: 50px; /* Altura base un poco mayor */
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)); /* Sombra un poco más fuerte para que resalte */
+            transform: scale(4); /* ¡Aumentamos la escala un 30% más! */
+            transform-origin: right center; /* Crece hacia la izquierda, manteniendo el margen derecho intacto */
+        }
+
+        /* --- ESTILOS DINÁMICOS SEGÚN EL FORMATO --- */
+
+        /* FORMATO: 4 PRODUCTOS (El Clásico) */
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            width: 960px;
+            position: relative; /* 🛡️ Importante para posicionar el emoji */
+        }
+
+        /* --- NUEVO: Ajuste del Emoji para 4 Productos --- */
+        .theme-sorpresa .grid-4::before {
+            content: ''; position: absolute;
+            bottom: -50px; /* 🚀 Bajamos el emoji un poco más */
+            left: -80px; /* 🚀 Lo movemos más a la izquierda */
+            width: 200px; height: 200px; /* 🚀 Reducimos su tamaño */
+            background: url('https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Astonished%20Face.png') no-repeat center / contain;
+            z-index: 20; pointer-events: none;
+            filter: drop-shadow(10px 10px 0px rgba(0,0,0,0.3));
+            transform: rotate(5deg);
+        }
+
+        /* FORMATO: 2 PRODUCTOS (Horizontales anchos) */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr; /* Una sola columna, uno encima de otro */
+            gap: 50px;
+            width: 900px;
+        }
+        .grid-2 .card {
+            flex-direction: row; /* Ponemos la imagen a la izquierda y el texto a la derecha */
+            height: 380px;
+            padding: 30px;
+        }
+        .grid-2 .img-container { width: 45%; height: 100%; padding: 0; }
+        .grid-2 .info-container { width: 55%; height: 100%; justify-content: center; padding-left: 20px;}
+        .grid-2 .nombre-producto { font-size: 32px; height: auto; margin-bottom: 20px; }
+        .grid-2 .precio-ahora { font-size: 70px; }
+        .grid-2 .precio-antes { font-size: 28px; }
+        .grid-2 .badge-descuento { width: 120px; height: 120px; top: -15px; left: -15px; }
+        .grid-2 .badge-descuento span { font-size: 45px; }
+
+        /* --- NUEVO: Ajuste del Emoji para 2 Productos --- */
+        .theme-sorpresa .grid-2::before {
+            content: ''; position: absolute;
+            bottom: 20px;
+            left: -60px;
+            width: 280px; height: 280px;
+            background: url('https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Astonished%20Face.png') no-repeat center / contain;
+            z-index: 20; pointer-events: none;
+            filter: drop-shadow(10px 10px 0px rgba(0,0,0,0.3));
+            transform: rotate(10deg);
+        }
+
+        /* FORMATO: 1 PRODUCTO (Súper Destacado) */
+        .grid-1 {
+            display: flex;
+            justify-content: center;
+            width: 850px; /* Un poco menos ancho para que respire a los lados */
+        }
+        .grid-1 .card {
+            width: 100%;
+            height: 900px; /* 🚀 Le damos 100px más de altura para que quepa todo */
+            border-radius: 40px;
+            padding: 40px 50px;
+        }
+        .grid-1 .img-container { height: 420px; margin-bottom: 20px; }
+        .grid-1 .nombre-producto { font-size: 42px; height: auto; min-height: 100px; margin-bottom: 20px; }
+        .grid-1 .precios-wrapper { padding: 30px; border-radius: 20px; margin-top: auto; }
+        .grid-1 .precio-ahora { font-size: 85px; letter-spacing: -3px; } /* Ajustado para que números largos no se corten */
+        .grid-1 .precio-antes { font-size: 32px; margin-bottom: 5px; }
+        .grid-1 .precio-ahora span { font-size: 40px; }
+        .grid-1 .badge-descuento { width: 150px; height: 150px; top: -20px; left: -20px; border-width: 6px; }
+        .grid-1 .badge-descuento span { font-size: 55px; }
+        .grid-1 .badge-descuento small { font-size: 18px; margin-top: 0; } 
+
+        .theme-sorpresa .grid-1::before {
+            content: ''; position: absolute;
+            bottom: 50px;
+            right: -50px; /* 🚀 Movemos el emoji a la derecha */
+            width: 300px; height: 300px;
+            background: url('https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Astonished%20Face.png') no-repeat center / contain;
+            z-index: 20; pointer-events: none;
+            filter: drop-shadow(10px 10px 0px rgba(0,0,0,0.3));
+            transform: rotate(-10deg);
+        }
+
+        /* =========================================
+           🎨 SISTEMA DE TEMAS (SKINS)
+           ========================================= */
+
+        /* 1. TEMA VIP PREMIUM (Negro y Dorado) */
+        .theme-vip {
+            background: radial-gradient(circle at 50% 20%, #2a2a2a 0%, #000000 100%);
+        }
+        .theme-vip .header h1 { text-shadow: 0 8px 25px rgba(255, 215, 0, 0.4); }
+        .theme-vip .header h1 span { color: #FFD700; }
+        .theme-vip .tagline { background: #FFD700; color: #111; box-shadow: 0 5px 15px rgba(255, 215, 0, 0.2); }
+        .theme-vip .footer-wrapper { border-top-color: #FFD700; background: #0a0a0a; }
+        .theme-vip .badge-descuento { background: linear-gradient(135deg, #FFD700 0%, #C08206 100%); color: #000; border-color: #222; }
+        .theme-vip .web-btn { background: linear-gradient(135deg, #FFD700 0%, #FDB931 100%); color: #000; border-color: #fff; }
+        .theme-vip .precio-ahora { color: #000; } /* Para que contraste en la tarjeta blanca */
+        .theme-vip .star1, .theme-vip .circle3 { color: #FFD700; border-color: #FFD700; text-shadow: 0 0 15px rgba(255,215,0,0.8); box-shadow: 0 0 10px rgba(255,215,0,0.5); }
+        .theme-vip .circle1 { background: #FFD700; box-shadow: 0 0 10px rgba(255,215,0,0.5); }
+        .theme-vip .card { border-color: #FFD700; }
+
+        /* 2. TEMA FRESCURA NATURAL (Verde Fruver) */
+        .theme-fruver {
+            background: 
+                repeating-conic-gradient(from 0deg at 50% -10%, rgba(255, 255, 255, 0.08) 0deg 4deg, transparent 4deg 8deg),
+                radial-gradient(circle at 50% 30%, #4CAF50 0%, #1B5E20 100%);
+        }
+        .theme-fruver .header h1 { text-shadow: 0 8px 20px rgba(0, 0, 0, 0.5); }
+        .theme-fruver .header h1 span { color: #FFF176; }
+        .theme-fruver .tagline { background: #FFF176; color: #1B5E20; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .theme-fruver .footer-wrapper { border-top-color: #4CAF50; background: #111; }
+        .theme-fruver .badge-descuento { background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); color: #fff; border-color: #fff; }
+        .theme-fruver .web-btn { background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%); color: #fff; border-color: #FFF176; }
+        .theme-fruver .precio-ahora { color: #2E7D32; }
+        .theme-fruver .star1, .theme-fruver .circle3 { color: #FFF176; border-color: #FFF176; text-shadow: 0 0 15px rgba(255,241,118,0.6); box-shadow: 0 0 10px rgba(255,241,118,0.5); }
+        .theme-fruver .circle1 { background: #FFF176; box-shadow: 0 0 10px rgba(255,241,118,0.5); }
+        .theme-fruver .card { border-color: #4CAF50; }
+
+        /* --- ETIQUETAS PARA PRODUCTOS SIN DESCUENTO (Sticker Amarillo) --- */
+        .badge-destacado {
+            position: absolute; top: 10px; left: 10px;
+            background: #FFC300; /* Amarillo vibrante Surtitodo */
+            color: #111; /* Texto negro para máxima legibilidad */
+            width: 105px; height: 105px; /* Un poco más grande para que respire el texto */
+            border-radius: 50%; 
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+            transform: rotate(-12deg); z-index: 10;
+            border: 4px dashed #E60000; /* Borde rojo punteado (efecto sticker/estrella) */
+        }
+        .badge-destacado span { 
+            font-weight: 900; 
+            font-size: 16px; /* Tamaño calibrado */
+            text-align: center; 
+            line-height: 1.1; 
+            padding: 0 5px;
+            text-transform: uppercase;
+            letter-spacing: -0.5px;
+        }
+
+        /* Adaptación automática para los otros temas */
+        .theme-vip .badge-destacado { background: #FFD700; border-color: #111; }
+        .theme-fruver .badge-destacado { background: #FFF176; border-color: #1B5E20; color: #1B5E20; }
+
+        /* 3. TEMA MERCADO ORGÁNICO (Fotografía + Distribución Asimétrica) */
+        .theme-mercado {
+            /* 1. Fondo fotográfico con velo oscuro para legibilidad */
+            background: linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 100%), 
+                        url('https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1080&auto=format&fit=crop') center/cover no-repeat;
+            justify-content: flex-start;
+        }
+
+        /* 2. Reposicionamos la cabecera hacia la izquierda */
+        .theme-mercado .header {
+            text-align: left;
+            padding: 50px 60px 10px 60px;
+        }
+        .theme-mercado .header h1 {
+            font-size: 100px; line-height: 0.95;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.9);
+        }
+        .theme-mercado .tagline { background: #4CAF50; color: white; }
+
+        /* 3. Efecto Zig-Zag para romper la cuadrícula tradicional */
+        .theme-mercado .grid-4 {
+            display: flex; flex-wrap: wrap; 
+            justify-content: space-between;
+            gap: 0; row-gap: 30px;
+            padding: 0 50px 40px 50px;
+        }
+        .theme-mercado .grid-4 .card {
+            width: 47%; /* Dos columnas */
+        }
+        /* Desfasamos las tarjetas pares hacia abajo */
+        .theme-mercado .grid-4 .card:nth-child(even) {
+            transform: translateY(60px);
+        }
+
+        /* 4. Tarjetas con efecto Vidrio Esmerilado (Glassmorphism) */
+        .theme-mercado .card {
+            background: rgba(255, 255, 255, 0.9); /* Ligeramente transparente */
+            backdrop-filter: blur(15px); /* Desenfoca el fondo de verduras */
+            border: 2px solid rgba(255,255,255,0.5);
+            box-shadow: 0 25px 45px rgba(0,0,0,0.6);
+            border: 4px dashed #E60000;
+        }
+        .theme-mercado .card::before { display: none; } /* Quitamos el degradado interno viejo */
+        .theme-mercado .precios-wrapper {
+            background: rgba(255, 255, 255, 0.6); /* Más transparente abajo */
+        }
+
+        /* 5. Footer Flotante */
+        .theme-mercado .footer-wrapper {
+            width: calc(100% - 80px); /* Le restamos márgenes */
+            margin: 0 auto 40px auto;
+            border-radius: 40px; /* Todo redondo */
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-top: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* 6. Ajuste de colores de los botones para que combinen */
+        .theme-mercado .web-btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            border-color: #FFF176; color: white;
+        }
+        .theme-mercado .badge-descuento {
+            background: #4CAF50; border-color: white; color: white;
+        }
+        .theme-mercado .badge-destacado {
+            background: #FFC300; border-color: #4CAF50; color: #111;
+        }
+
+        /* =========================================
+           4. TEMA E-COMMERCE (Exclusivo Web / Cyber)
+           ========================================= */
+           .theme-ecommerce {
+            /* Fondo azul noche/eléctrico que grita "Tecnología y Web" */
+            background: linear-gradient(135deg, #0F2027 0%, #203A43 50%, #2C5364 100%);
+        }
+        
+        /* Textos con brillo neón Cyan */
+        .theme-ecommerce .header h1 { color: #ffffff; text-shadow: 0 5px 20px rgba(0, 229, 255, 0.6); }
+        .theme-ecommerce .header h1 span { color: #00e5ff; }
+        .theme-ecommerce .tagline { background: #00e5ff; color: #0F2027; box-shadow: 0 0 20px rgba(0,229,255,0.4); }
+
+        /* Tarjetas estilo UI (Interfaz de Usuario) */
+        .theme-ecommerce .card {
+            border-color: #00e5ff;
+            box-shadow: 0 20px 50px rgba(0, 229, 255, 0.15);
+        }
+        .theme-ecommerce .badge-descuento {
+            background: linear-gradient(135deg, #e91e63 0%, #9c27b0 100%); /* Magenta/Morado digital */
+            border-color: #fff; color: #fff;
+        }
+        .theme-ecommerce .badge-destacado {
+            background: #00e5ff; border-color: #0F2027; color: #0F2027;
+        }
+        .theme-ecommerce .precio-ahora { color: #e91e63; }
+
+        /* --- REESTRUCTURACIÓN TOTAL DEL FOOTER (Estilo Barra de App) --- */
+        .theme-ecommerce .footer-wrapper {
+            background: #ffffff;
+            border-top: none;
+            padding: 25px 45px; 
+            display: flex;
+            flex-direction: row; /* Los ponemos lado a lado */
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 40px 40px 0 0;
+            box-shadow: 0 -15px 40px rgba(0,0,0,0.5);
+            flex-shrink: 0; /* 🛡️ BLINDAJE: Evita que la cámara lo aplaste o lo recorte */
+            border: 6px dashed #00e5ff;
+        }
+
+        /* 1. ELIMINAMOS EL TELÉFONO */
+        .theme-ecommerce .footer-left { display: none !important; }
+
+        /* 2. BOTÓN WEB GIGANTE (Ocupa todo el lado izquierdo) */
+        .theme-ecommerce .footer-center {
+            position: relative; left: auto; transform: none; 
+            flex: 1; /* Toma todo el espacio sobrante */
+            display: flex; justify-content: flex-start;
+            padding-right: 30px; /* Espacio para que no choque con el logo */
+        }
+        .theme-ecommerce .web-btn {
+            width: 100%; /* Se estira lo máximo posible */
+            justify-content: center;
+            padding: 18px; 
+            font-size: 34px; 
+            background: linear-gradient(135deg, #e91e63 0%, #9c27b0 100%);
+            border: none;
+            box-shadow: 0 10px 25px rgba(233, 30, 99, 0.4);
+            border-radius: 20px;
+            letter-spacing: 1px;
+        }
+        .theme-ecommerce .web-btn::after {
+            content: ' 🛒'; font-size: 40px; margin-left: 10px;
+        }
+
+        /* 3. LOGO A LA DERECHA */
+        .theme-ecommerce .footer-right {
+            flex: 0 0 auto; /* Mantiene su tamaño original sin aplastarse */
+            display: flex; justify-content: flex-end;
+            align-items: center;
+        }
+        .theme-ecommerce .footer-logo-img {
+            height: 95px; /* Tamaño del logo */
+            transform: scale(1.3); /* Un poco más grande pero controlado */
+            transform-origin: right center; 
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15));
+        }
+
+        /* =========================================
+           5. TEMA SORPRESA (Locura / Cómic / Neo-Brutalismo)
+           ========================================= */
+           .theme-sorpresa {
+            /* Fondo de rayos explosivos estilo cómic */
+            background: repeating-conic-gradient(from 0deg at 50% 50%, #FFC300 0deg 15deg, #FF9800 15deg 30deg);
+        }
+
+        /* Cabecera impactante, con sombras sólidas y letras inclinadas */
+        .theme-sorpresa .header { transform: rotate(-2deg); padding-top: 55px; z-index: 2; position: relative; }
+        .theme-sorpresa .header h1 { 
+            color: #111; 
+            text-shadow: 4px 4px 0px #FFF, 8px 8px 0px #E60000; /* Efecto 3D de texto */
+            font-size: 95px; letter-spacing: 2px;
+        }
+        .theme-sorpresa .header h1 span { color: #E60000; }
+        .theme-sorpresa .tagline { 
+            background: #111; color: #FFF; 
+            border: 4px solid #FFF; box-shadow: 6px 6px 0px #E60000;
+            transform: rotate(3deg); font-size: 26px; 
+        }
+
+        /* Tarjetas rebeldes (Bordes gruesos y desordenadas) */
+        .theme-sorpresa .card {
+            border: 6px solid #111;
+            border-radius: 10px; /* Más cuadradas y agresivas */
+            box-shadow: 12px 12px 0px #111; /* Sombra sólida dura */
+            transform: rotate(1deg);
+        }
+        .theme-sorpresa .card:nth-child(even) { transform: rotate(-2deg); }
+        .theme-sorpresa .precio-ahora { color: #111; text-shadow: 3px 3px 0px #FFC300; }
+        
+        /* Etiquetas cuadradas tipo "Sello de Urgencia" */
+        .theme-sorpresa .badge-descuento, .theme-sorpresa .badge-destacado {
+            border-radius: 0; /* Quitamos lo redondo */
+            border: 5px solid #111;
+            box-shadow: 6px 6px 0px #111;
+            transform: rotate(-10deg); width: 100px; height: 100px;
+        }
+        .theme-sorpresa .badge-descuento { background: #E60000; color: #FFF; }
+        .theme-sorpresa .badge-destacado { background: #00E5FF; color: #111; } /* Un cyan eléctrico para contrastar */
+
+        /* Footer con estilo a juego */
+        .theme-sorpresa .footer-wrapper {
+            background: #111; border-top: 8px solid #FFF;
+            border-radius: 0; padding: 25px 45px; /* Le quitamos las curvas para mantener la agresividad */
+        }
+        .theme-sorpresa .web-btn {
+            background: #FFC300; color: #111; border: 4px solid #FFF;
+            box-shadow: 8px 8px 0px #E60000; border-radius: 10px;
+        }
+    </style>
+</head>
+
+<% 
+    // 1. Calculamos todo aquí arriba de forma segura
+    let esHistoria = (typeof orientacion !== 'undefined' && orientacion === 'historia');
+    let altura = esHistoria ? '1920px' : '1350px';
+    let paddingExtra = esHistoria ? 'padding-top: 120px; padding-bottom: 80px;' : '';
+    let claseTema = typeof tema !== 'undefined' ? tema : 'clasico';
+    
+    // 2. Armamos la etiqueta completa como si fuera texto
+    let etiquetaBody = `<body class="theme-${claseTema}" style="height: ${altura}; ${paddingExtra}">`;
+%>
+
+<%- etiquetaBody %>
+
+    <div class="decor star1">✦</div>
+    <div class="decor star2">✦</div>
+    <div class="decor circle1"></div>
+    <div class="decor circle2"></div>
+    <div class="decor circle3"></div>
+
+    <div class="header">
+        <div class="tagline"><%= textoTagline %></div>
+        
+        <% 
+            // MAGIA EJS: Separar la frase para pintar la última palabra de otro color
+            let palabras = tituloPrincipal.trim().split(' ');
+            let ultimaPalabra = '';
+            let restoDelTitulo = tituloPrincipal;
+
+            if (palabras.length > 1) {
+                ultimaPalabra = palabras.pop(); // Saca la última palabra
+                restoDelTitulo = palabras.join(' '); // Vuelve a unir el resto
+            } else {
+                // Si es solo 1 palabra, la dejamos completa sin el color de acento
+                restoDelTitulo = tituloPrincipal;
+                ultimaPalabra = '';
+            }
+        %>
+        
+        <h1><%= restoDelTitulo %> <% if(ultimaPalabra !== '') { %><span><%= ultimaPalabra %></span><% } %></h1>
+    </div>
+    
+    <div class="grid-container">
+        <div class="grid grid-<%= plantilla %>">
+            <% productos.forEach(function(producto) { %>
+                <div class="card">
+                    
+                    <% if(producto.porcentaje > 0) { %>
+                        <div class="badge-descuento">
+                            <span>-<%= producto.porcentaje %></span>
+                            <small>% OFF</small>
+                        </div>
+                    <% } else { %>
+                        <% const badges = ['⭐ Top<br>Ventas', '🔥 Reco-<br>mendado', '🌟 Alta<br>Calidad', '👍 Súper<br>Precio']; %>
+                        <% const randomBadge = badges[Math.floor(Math.random() * badges.length)]; %>
+                        <div class="badge-destacado">
+                            <span><%- randomBadge %></span>
+                        </div>
+                    <% } %>
+                    
+                    <div class="img-container">
+                        <img src="<%= baseUrl %><%= producto.proimagenurl %>" class="foto-producto">
+                    </div>
+                    
+                    <div class="info-container">
+                        <div class="nombre-producto"><%= producto.nombre_limpio %></div>
+                        
+                        <div class="precios-wrapper">
+                            <% if(producto.porcentaje > 0) { %>
+                                <div class="precio-antes">Antes: $<%= producto.precio_antes_fmt %></div>
+                            <% } else { %>
+                                <% const textos = ['Llévalo por solo:', 'Precio Surtitodo:', 'Paga solo:', 'Mejor precio:']; %>
+                                <% const randomText = textos[Math.floor(Math.random() * textos.length)]; %>
+                                <div class="precio-texto-persuasivo"><%= randomText %></div>
+                            <% } %>
+                            <div class="precio-ahora"><span>$</span><%= producto.precio_final_fmt %></div>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+
+    <div class="footer-wrapper">
+        
+        <div class="footer-left">
+            <div class="contact-pill">
+                <div class="icon">📱</div>
+                <span>Pide al <strong>312 840 6312</strong></span>
+            </div>
+        </div>
+
+        <div class="footer-center">
+            <div class="web-btn">
+                🌐 surtitodoideal.com
+            </div>
+        </div>
+
+        <div class="footer-right">
+            <img src="https://surtitodoideal.com/7f498de1-fb56-4ce2-b2dc-404a582d6427.png" alt="Surtitodo Ideal" class="footer-logo-img" onerror="this.src='https://api.surtitodoideal.com/static/icon.png'">
+        </div>
+
+    </div>
+
+</body>
+</html>
