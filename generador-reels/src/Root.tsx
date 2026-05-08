@@ -2,6 +2,12 @@ import { Composition } from 'remotion';
 import { PromoReel, promoSchema } from './Composition';
 import { ReelElegante } from './Composition2';
 import { TutorialReel } from './Tutorial';
+import { ReelBrutalismo } from './Composition3';
+import { OfferWonReel } from './OfferWonReel';
+import { ReelLanzamiento } from './ReelLanzamiento';
+import { ReelAra } from './ReelAra';
+import { PodcastUniversidadCompleto } from './PodcastUniversidad';
+import { ReelTemporada } from './ReelTemporada';
 
 export const RemotionRoot: React.FC = () => {
 	
@@ -40,6 +46,7 @@ export const RemotionRoot: React.FC = () => {
 	};
 
 	const duracionTotalVideo = (datosSimulados.productos.length * 180) + 150;
+	const duracionTotalFrames = 7050;
 	
 	return (
 		<>
@@ -67,6 +74,30 @@ export const RemotionRoot: React.FC = () => {
 				defaultProps={datosSimulados} 
 			/>
 
+			{/* PLANTILLA 3: El Reel Brutalista (Impacto) */}
+			<Composition
+				id="ReelBrutalismo"
+				component={ReelBrutalismo}
+				durationInFrames={(datosSimulados.productos.length * 90) + 90}
+				fps={60}
+				width={1080}
+				height={1920}
+				schema={promoSchema}
+				defaultProps={datosSimulados} 
+			/>
+
+			{/* PLANTILLA 4: Lanzamiento / Estreno (Cyberpunk) */}
+			<Composition
+				id="ReelLanzamiento"
+				component={ReelLanzamiento}
+				durationInFrames={(datosSimulados.productos.length * 180) + 150}
+				fps={60}
+				width={1080}
+				height={1920}
+				schema={promoSchema}
+				defaultProps={datosSimulados} 
+			/>
+
 			<Composition
 			id="TutorialReel"
 				component={TutorialReel}
@@ -79,6 +110,56 @@ export const RemotionRoot: React.FC = () => {
 					videoFileName: 'tutorial.mp4' // Asegúrate de tener este video en la carpeta public
 				}}
 			/>
+
+			<Composition
+				id="OfferWonReel1" // Un ID único
+				component={OfferWonReel}
+				durationInFrames={300} // Duración: 10 segundos (a 30 fps)
+				fps={30}
+				width={1080} // Reel Vertical
+				height={1920}
+				defaultProps={{
+					// Props por defecto para que puedas ver una previsualización
+					clientName: 'JUAN PÉREZ (Ejemplo)',
+					propertyAddress: 'Calle Principal 123, Caicedonia',
+					clientImageUrl: 'https://remotion.dev/img/logo-small.png',
+					logoImageUrl: 'https://surtitodoideal.com/Sin%20t%C3%ADtulo-1.png', // Usando tu archivo subido
+				}}
+			/>
+
+			{/* PLANTILLA 5: Estilo Ara (1 Solo Producto, Súper Impacto) */}
+			<Composition
+				id="ReelAraStyle"
+				component={ReelAra}
+				durationInFrames={180} // 5 segundos, súper rápido y directo
+				fps={30} // 30fps es suficiente y renderiza el doble de rápido!
+				width={1080}
+				height={1920}
+				schema={promoSchema}
+				defaultProps={datosSimulados} 
+			/>
+
+			<Composition
+                id="AudiogramaConstitucionFinal"
+                component={PodcastUniversidadCompleto}
+                durationInFrames={duracionTotalFrames}
+                fps={30}
+                width={1920}
+                height={1080}
+            />
+
+			{/* PLANTILLA: Especial de Temporada */}
+			<Composition
+				id="ReelTemporada"
+				component={ReelTemporada}
+				durationInFrames={900} // 120 (intro) + (150 * 4 productos) + 180 (outro) = 900
+				fps={60}
+				width={1080}
+				height={1920}
+				schema={promoSchema}
+				defaultProps={datosSimulados} 
+			/>
+
 		</>
 	);
 };

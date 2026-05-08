@@ -305,6 +305,16 @@
         }
 
         /* --- MODO OSCURO --- */
+
+        body.dark-theme div[id="contenedor-cliente-oferta"] {
+            background: #2a2010 !important;
+            border-color: #554422 !important;
+        }
+        body.dark-theme div[id="contenedor-tutorial"] {
+            background: #2a2a2a !important;
+            border-color: #444 !important;
+        }
+
         body.dark-theme {
             --bg-color: #121212;
             --card-bg: #1e1e1e;
@@ -390,6 +400,8 @@
                     <option value="mercado">🍅 Estilo Mercado</option>
                     <option value="ecommerce">🛒 Exclusivo Web</option>
                     <option value="sorpresa">😱 Precios de Locura</option>
+                    <option value="lanzamiento">✨ Nuevo Ingreso (Estreno)</option>
+                    <option value="comunicado">📢 Comunicado (Cierre 3 de Abril)</option>
                 </select>
             </div>
 
@@ -423,30 +435,68 @@
                         <option value="¡Aprovecha hoy mismo!">¡Aprovecha hoy mismo!</option>
                         <option value="Precios imbatibles">Precios imbatibles</option>
                         <option value="Exclusivo Web">Exclusivo Web</option>
+                        <option value="AVISO IMPORTANTE">AVISO IMPORTANTE</option>
                     </select>
                 </div>
             </div>
         </div>
-
         <div class="config-card">
             <h2>🎬 3. Videos Especiales</h2>
             
             <div class="form-group">
-                <label>Video Tutorial Automático:</label>
-                <p style="font-size: 13px; opacity: 0.8; margin-top: 0; line-height: 1.4;">
-                    Genera un Reel automático enseñando a los clientes cómo usar Surtitodo Ideal, usando la grabación base.
+                <label>Selecciona el tipo de video a generar:</label>
+                <select id="selector-video-especial" onchange="cambiarVideoEspecial()">
+                    <option value="tutorial">📱 Video Tutorial Automático</option>
+                    <option value="cliente_oferta">🎉 Reel: Oferta Ganada (Cliente)</option>
+                </select>
+            </div>
+
+            <div id="contenedor-tutorial" style="display: block; margin-top: 15px; padding: 15px; background: #fdfdfd; border-radius: 8px; border: 1px solid #eaeaea;">
+                <p style="font-size: 13px; color: #666; margin-top: 0; line-height: 1.4;">
+                    Genera un Reel automático enseñando a los clientes cómo usar Surtitodo Ideal, usando la grabación base que ya está en el sistema.
                 </p>
-                <button id="btn-tutorial" class="btn-action btn-dark" style="width: 100%; margin-top: 10px;" onclick="generarTutorial()">
+                <button id="btn-tutorial" class="btn-action btn-dark" style="width: 100%; margin-top: 10px; padding: 12px; font-size: 14px;" onclick="generarTutorial()">
                     ✨ Generar Reel Tutorial
                 </button>
             </div>
+
+            <div id="contenedor-cliente-oferta" style="display: none; margin-top: 15px; padding: 15px; background: #fffcf0; border-radius: 8px; border: 1px solid #ffeeba; border-left: 4px solid #FFC300;">
+                <p style="font-size: 13px; color: #666; margin-top: 0; line-height: 1.4; margin-bottom: 15px;">
+                    Sube la foto de tu cliente y sus datos para crear un Reel de celebración "Nivel Pro".
+                </p>
+                
+                <form id="form-reel-cliente" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div>
+                        <input type="text" id="clientName" name="clientName" placeholder="👤 Nombre (Ej. Juan Pérez)" required 
+                               style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 13px;">
+                    </div>
+            
+                    <div>
+                        <input type="text" id="propertyAddress" name="propertyAddress" placeholder="📍 Mensaje o Dirección" required 
+                               style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 13px;">
+                    </div>
+            
+                    <div>
+                        <label style="font-size: 12px; font-weight: 600; color: #555; margin-bottom: 5px; display: block;">📸 Foto del Cliente:</label>
+                        <input type="file" id="clientFoto" name="clientFoto" accept="image/png, image/jpeg, image/jpg" required
+                               style="width: 100%; padding: 8px; background: #fff; border-radius: 6px; border: 1px solid #ccc; font-size: 12px;">
+                    </div>
+            
+                    <button type="button" id="btn-reel-cliente" onclick="generarReelCliente()" class="btn-action btn-primary"
+                            style="width: 100%; margin-top: 5px; padding: 12px; font-size: 14px;">
+                        🎬 Generar Reel Pro
+                    </button>
+                </form>
+            </div>
         </div>
-        
-    </div> 
+
+    </div>
+    
     <div class="inventory-header">
         <div class="tabs">
             <button id="tab-ofertas" class="active" onclick="cambiarPestana('ofertas')">🔥 Ofertas Activas</button>
             <button id="tab-todos" onclick="cambiarPestana('todos')">🛒 Todo el Catálogo</button>
+            <button id="tab-estancados" onclick="cambiarPestana('estancados')" style="color: #e11d48; background: #ffe4e6; border: 1px solid #fda4af;">⚠️ Zona de Remate</button>
         </div>
         <input type="text" id="buscador" class="search-box" placeholder="🔍 Buscar producto por nombre..." oninput="reiniciarYRenderizar()">
     </div>
@@ -467,7 +517,10 @@
             <select id="selector-plantilla-video" style="border: none; background: transparent; padding: 8px; font-weight: 600; width: auto; min-width: 200px;">
                 <option value="PromoReel">💥 Video: Explosivo</option>
                 <option value="ReelElegante">✨ Video: Elegante</option>
-            </select>
+                <option value="ReelBrutalismo">🚧 Reel Brutalista (Impacto)</option>
+                <option value="ReelLanzamiento">🚀 Reel: Nuevo Lanzamiento (Cyber)</option>
+                <option value="ReelAraStyle">🛒 Reel Impacto (1 Producto Máximo)</option>
+                <option value="ReelTemporada">🌟 Reel: Especial de Temporada</option> </select>
             <button id="btn-generar-video" class="btn-action btn-dark" onclick="generarVideoRemotion()">
                 🎬 Crear Reel
             </button>
@@ -503,6 +556,7 @@
         let paginaActual = 1;
         const PRODUCTOS_POR_PAGINA = 50;
         let limiteProductos = 4;
+        let inventarioEstancados = [];
 
         async function cargarDatos() {
             try {
@@ -515,10 +569,34 @@
             }
         }
 
-        function cambiarPestana(pestana) {
+        async function cambiarPestana(pestana) {
             pestanaActual = pestana;
+            
+            // Gestión visual de los botones
             document.getElementById('tab-ofertas').classList.toggle('active', pestana === 'ofertas');
             document.getElementById('tab-todos').classList.toggle('active', pestana === 'todos');
+            
+            // Manejo especial visual para el botón de remate
+            const btnEstancados = document.getElementById('tab-estancados');
+            if (pestana === 'estancados') {
+                btnEstancados.style.background = '#e11d48';
+                btnEstancados.style.color = 'white';
+                
+                // Descargamos los datos si aún no lo hemos hecho
+                if (inventarioEstancados.length === 0) {
+                    document.getElementById('grid-productos').innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #e11d48;">⏳ Buscando inventario inmovilizado...</p>';
+                    try {
+                        const res = await fetch('/api/local-estancados');
+                        inventarioEstancados = await res.json();
+                    } catch (error) {
+                        console.error("Error trayendo estancados");
+                    }
+                }
+            } else {
+                btnEstancados.style.background = '#ffe4e6';
+                btnEstancados.style.color = '#e11d48';
+            }
+        
             reiniciarYRenderizar();
         }
 
@@ -539,10 +617,14 @@
             
             if (paginaActual === 1) grid.innerHTML = '';
 
-            let productosFiltrados = inventarioGlobal;
+            let productosFiltrados = [];
             
             if (pestanaActual === 'ofertas') {
                 productosFiltrados = inventarioGlobal.filter(p => p.en_promo == 1 && parseFloat(p.descuento_promo) > 0);
+            } else if (pestanaActual === 'estancados') {
+                productosFiltrados = inventarioEstancados; // La nueva variable global
+            } else {
+                productosFiltrados = inventarioGlobal;
             }
 
             if (busqueda) {
@@ -551,6 +633,12 @@
                     const nombreNormalizado = p.nombre.toLowerCase();
                     return terminos.every(termino => nombreNormalizado.includes(termino));
                 });
+            }
+
+            // 🛡️ ESCUDO ANTI-ERRORES: Si por algún motivo no es un Array, lo forzamos a ser uno vacío
+            if (!Array.isArray(productosFiltrados)) {
+                console.warn("⚠️ Advertencia: productosFiltrados no es un Array. Forzando corrección.");
+                productosFiltrados = [];
             }
 
             if (productosFiltrados.length === 0) {
@@ -664,13 +752,21 @@
         }
 
         function generarTextoCopy(titulo) {
+            const temaSeleccionado = document.getElementById('selector-tema').value;
             const productosElegidos = inventarioGlobal.filter(p => idsSeleccionados.includes(p.id_producto.trim()));
-            let copy = `🚨 ¡${titulo} en Surtitodo Ideal! 🚨\n\n`;
+            let copy = '';
+        
+            // Si es un lanzamiento, el texto arranca diferente
+            if (temaSeleccionado === 'lanzamiento') {
+                copy = `✨ ¡ATENCIÓN CAICEDONIA! Han llegado cosas increíbles a Surtitodo Ideal ✨\n\n🚨 ¡${titulo}! 🚨\n\nDescubre estas novedades:\n\n`;
+            } else {
+                copy = `🚨 ¡${titulo} en Surtitodo Ideal! 🚨\n\n`;
+            }
             
             productosElegidos.forEach(p => {
                 let nombreLimpio = p.nombre.charAt(0).toUpperCase() + p.nombre.slice(1).toLowerCase();
-                
                 let precioFinal = Number(p.precio_venta_final);
+                
                 if (p.en_promo == 1 && parseFloat(p.descuento_promo) > 0) {
                     let desc = parseFloat(p.descuento_promo);
                     if (desc <= 100) {
@@ -682,12 +778,23 @@
                 
                 precioFinal = Math.round(precioFinal);
                 let precioFormato = precioFinal.toLocaleString('es-CO');
-                copy += `✅ ${nombreLimpio} ➡️ por solo $${precioFormato}\n`;
+                
+                // Mensaje del producto
+                if (temaSeleccionado === 'lanzamiento') {
+                    copy += `🆕 ${nombreLimpio} ➡️ Precio de Estreno: $${precioFormato}\n`;
+                } else {
+                    copy += `✅ ${nombreLimpio} ➡️ por solo $${precioFormato}\n`;
+                }
             });
-            
+        
             copy += `\n🛒 Pide sin salir de casa en:\n🌐 surtitodoideal.com\n\n`;
             copy += `📱 WhatsApp: 312 840 6312\n\n`;
-            copy += `#SurtitodoIdeal #Caicedonia #Ofertas #MercadoEnCasa`;
+            
+            if (temaSeleccionado === 'lanzamiento') {
+                copy += `#SurtitodoIdeal #Caicedonia #NuevosIngresos #Novedades`;
+            } else {
+                copy += `#SurtitodoIdeal #Caicedonia #Ofertas #MercadoEnCasa`;
+            }
             
             document.getElementById('texto-copy').value = copy;
         }
@@ -765,6 +872,21 @@
             document.getElementById('theme-toggle').innerText = '☀️';
         }
 
+        // 🔄 FUNCIÓN PARA CAMBIAR ENTRE VIDEOS ESPECIALES 🔄
+        function cambiarVideoEspecial() {
+            const selector = document.getElementById('selector-video-especial').value;
+            const divTutorial = document.getElementById('contenedor-tutorial');
+            const divCliente = document.getElementById('contenedor-cliente-oferta');
+
+            if (selector === 'tutorial') {
+                divTutorial.style.display = 'block';
+                divCliente.style.display = 'none';
+            } else if (selector === 'cliente_oferta') {
+                divTutorial.style.display = 'none';
+                divCliente.style.display = 'block';
+            }
+        }
+
         // 🎬 NUEVA FUNCIÓN PARA EL TUTORIAL 🎬
         async function generarTutorial() {
             const btn = document.getElementById('btn-tutorial');
@@ -790,6 +912,49 @@
             } finally {
                 btn.innerText = textoOriginal;
                 btn.disabled = false;
+            }
+        }
+
+        // 🎬 FUNCIÓN PARA GENERAR EL REEL DEL CLIENTE 🎬
+        async function generarReelCliente() {
+            const btn = document.getElementById('btn-reel-cliente');
+            const form = document.getElementById('form-reel-cliente');
+            
+            // Validar que el formulario esté lleno
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const textoOriginal = btn.innerText;
+            btn.innerText = '⏳ Subiendo y Renderizando (Tomará un minuto)...';
+            btn.disabled = true;
+            btn.style.background = '#666';
+
+            // FormData es necesario porque estamos enviando un archivo (imagen)
+            const formData = new FormData(form);
+
+            try {
+                const res = await fetch('/generar-reel-cliente', { 
+                    method: 'POST',
+                    body: formData 
+                });
+                
+                const data = await res.json();
+                
+                if(data.success) {
+                    alert("✅ ¡Reel Pro generado con éxito!");
+                    window.open(data.url, '_blank');
+                } else {
+                    alert("Hubo un error al generar el Reel: " + data.error);
+                }
+            } catch(error) {
+                console.error(error);
+                alert("Error de conexión con el servidor.");
+            } finally {
+                btn.innerText = textoOriginal;
+                btn.disabled = false;
+                btn.style.background = '#E60000';
             }
         }
 

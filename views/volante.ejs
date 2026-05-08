@@ -46,7 +46,7 @@
         /* --- CABECERA --- */
         .header {
             width: 100%; text-align: center;
-            padding: 50px 0 10px 0;
+            padding: 30px 0 10px 0; /* <-- Reducido de 50px a 30px */
             z-index: 2; position: relative;
         }
         .tagline {
@@ -70,13 +70,13 @@
             display: flex; justify-content: center; align-items: center;
             flex: 1; 
             width: 100%;
-            padding: 10px 0 40px 0; /* padding-bottom crea el espacio que faltaba abajo */
+            padding: 5px 0 15px 0; /* <-- Reducido el espacio inferior */
             z-index: 2; position: relative;
         }
         .grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 40px; /* Separación ampliada entre tarjetas */
+            gap: 25px; /* <-- REDUCIDO de 40px a 25px */
             width: 960px;
         }
 
@@ -113,9 +113,9 @@
         .badge-descuento small { font-size: 14px; font-weight: 800; line-height: 1; margin-top: -2px; }
 
         .img-container {
-            width: 100%; height: 250px;
+            width: 100%; height: 210px; /* <-- REDUCIDO de 250px a 210px */
             display: flex; justify-content: center; align-items: center;
-            padding: 20px; z-index: 1;
+            padding: 15px; z-index: 1;
         }
         .foto-producto {
             max-width: 100%; max-height: 100%;
@@ -153,7 +153,7 @@
         .footer-wrapper {
             background: #111;
             width: 100%;
-            padding: 25px 35px 35px 35px; /* Un poco menos de margen a los lados */
+            padding: 20px 35px 25px 35px; /* <-- Ligeramente más delgado */
             display: flex; 
             align-items: center;
             justify-content: space-between;
@@ -162,6 +162,8 @@
             border-top-right-radius: 40px;
             box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
             z-index: 10; position: relative;
+            flex-shrink: 0; /* <-- MUY IMPORTANTE: Evita que el footer se aplaste o se esconda */
+            margin-top: auto;
         }
 
         /* Creamos 3 zonas exactas para que nunca se toquen */
@@ -555,7 +557,130 @@
             background: #FFC300; color: #111; border: 4px solid #FFF;
             box-shadow: 8px 8px 0px #E60000; border-radius: 10px;
         }
+
+        /* =========================================
+        6. TEMA LANZAMIENTO (Nuevos Ingresos / Estreno)
+        ========================================= */
+        .theme-lanzamiento {
+            background: radial-gradient(circle at 50% 10%, #2b0b3d 0%, #0d0415 100%); /* Fondo oscuro misterioso */
+        }
+        /* Textos con brillo Neón Magenta */
+        .theme-lanzamiento .header h1 {
+            color: #ffffff;
+            text-shadow: 0 5px 25px rgba(255, 0, 102, 0.8); 
+            letter-spacing: 1px;
+        }
+        .theme-lanzamiento .header h1 span {
+            color: #ff0066; /* Magenta vibrante */
+        }
+        .theme-lanzamiento .tagline {
+            background: #ff0066;
+            color: #ffffff;
+            border: 2px solid #ffffff;
+            box-shadow: 0 5px 20px rgba(255, 0, 102, 0.5);
+        }
+        /* Tarjetas más limpias que resalten el producto */
+        .theme-lanzamiento .card {
+            background: #ffffff;
+            border: 4px solid #ff0066;
+            box-shadow: 0 20px 50px rgba(255, 0, 102, 0.25);
+        }
+        .theme-lanzamiento .precio-ahora {
+            color: #2b0b3d;
+        }
+        /* Etiquetas */
+        .theme-lanzamiento .badge-descuento {
+            background: linear-gradient(135deg, #ff0066 0%, #99003d 100%);
+            color: #fff;
+            border-color: #fff;
+        }
+        .theme-lanzamiento .badge-destacado {
+            background: #00e5ff; /* Cyan eléctrico para generar un contraste brutal */
+            color: #0d0415;
+            border: 4px dashed #0d0415;
+        }
+        /* Footer (Mantiene el layout, cambia colores) */
+        .theme-lanzamiento .footer-wrapper {
+            background: #0d0415;
+            border-top: 6px solid #ff0066;
+        }
+        .theme-lanzamiento .web-btn {
+            background: #ff0066;
+            color: #fff;
+            border: 2px solid #fff;
+        }
+        .theme-lanzamiento .contact-pill .icon {
+            background: #00e5ff;
+            color: #0d0415;
+            box-shadow: 0 4px 10px rgba(0, 229, 255, 0.4);
+        }
+        /* Decoraciones flotantes */
+        .theme-lanzamiento .star1, .theme-lanzamiento .circle3 {
+            color: #00e5ff;
+            border-color: #00e5ff;
+            text-shadow: 0 0 15px rgba(0, 229, 255, 0.6);
+        }
+        /* =========================================
+           7. TEMA COMUNICADO FIJO (Aviso de Cierre)
+           ========================================= */
+           .theme-comunicado {
+            background: radial-gradient(circle at 50% 30%, #1a1a1a 0%, #000000 100%);
+        }
+        /* Oculta la grilla de productos por completo */
+        .theme-comunicado .grid-container { 
+            display: none !important; 
+        }
+        .theme-comunicado .header { 
+            padding-top: 80px; 
+            z-index: 5;
+        }
+        .theme-comunicado .header h1 { 
+            font-size: 100px; 
+            color: #ffffff; 
+            line-height: 1.1; 
+        }
+        .theme-comunicado .header h1 span { 
+            color: #E60000; /* Rojo Surtitodo */
+            font-size: 120px; 
+            display: block; 
+            margin-top: 15px; 
+        }
+        
+        /* 👇 ESTO OCULTA LA ETIQUETA AMARILLA DUPLICADA 👇 */
+        .theme-comunicado .tagline { 
+            display: none !important; 
+        }
+
+        .theme-comunicado .footer-wrapper { 
+            background: #111; 
+            border-top: 8px solid #E60000; 
+        }
+
+        /* --- ESTILO DEL PÁRRAFO --- */
+        .mensaje-fijo { 
+            display: none; /* Oculto en ofertas normales */
+        }
+        .theme-comunicado .mensaje-fijo {
+            display: block;
+            color: #ffffff;
+            font-size: 38px;
+            text-align: center;
+            width: 880px;
+            margin: 30px auto 0 auto;
+            line-height: 1.5;
+            background: rgba(230, 0, 0, 0.1); 
+            padding: 40px 50px;
+            border-radius: 20px;
+            border: 2px solid #E60000;
+            backdrop-filter: blur(10px);
+            z-index: 5;
+            position: relative;
+        }
+        .theme-comunicado .mensaje-fijo strong { 
+            color: #FFC300; 
+        }
     </style>
+
 </head>
 
 <% 
@@ -597,7 +722,13 @@
         %>
         
         <h1><%= restoDelTitulo %> <% if(ultimaPalabra !== '') { %><span><%= ultimaPalabra %></span><% } %></h1>
-    </div>
+        </div>
+        
+    <div class="mensaje-fijo">
+        ¡Gracias por preferir Nuestra Empresa!<br><br>
+        Les informamos a todos nuestros clientes que este <strong>viernes 3 de abril</strong> no tendremos servicio al público.<br><br>
+        Nos vemos el <strong>sábado 4 de abril</strong> en nuestro horario habitual para seguir brindándoles la mejor atención y los productos más frescos.
+    </div>
     
     <div class="grid-container">
         <div class="grid grid-<%= plantilla %>">
@@ -610,8 +741,15 @@
                             <small>% OFF</small>
                         </div>
                     <% } else { %>
-                        <% const badges = ['⭐ Top<br>Ventas', '🔥 Reco-<br>mendado', '🌟 Alta<br>Calidad', '👍 Súper<br>Precio']; %>
-                        <% const randomBadge = badges[Math.floor(Math.random() * badges.length)]; %>
+                        <% 
+                        let badges = [];
+                        if (claseTema === 'lanzamiento') {
+                            badges = ['✨ Recién<br>Llegado', '🔥 Novedad', '🆕 Nuevo<br>Ingreso', '💎 Exclusivo'];
+                        } else {
+                            badges = ['⭐ Top<br>Ventas', '🔥 Reco-<br>mendado', '🌟 Alta<br>Calidad', '👍 Súper<br>Precio']; 
+                        }
+                        const randomBadge = badges[Math.floor(Math.random() * badges.length)]; 
+                        %>
                         <div class="badge-destacado">
                             <span><%- randomBadge %></span>
                         </div>
@@ -628,8 +766,15 @@
                             <% if(producto.porcentaje > 0) { %>
                                 <div class="precio-antes">Antes: $<%= producto.precio_antes_fmt %></div>
                             <% } else { %>
-                                <% const textos = ['Llévalo por solo:', 'Precio Surtitodo:', 'Paga solo:', 'Mejor precio:']; %>
-                                <% const randomText = textos[Math.floor(Math.random() * textos.length)]; %>
+                                <% 
+                                let textos = [];
+                                if (claseTema === 'lanzamiento') {
+                                    textos = ['Pruébalo por solo:', 'Precio de Estreno:', 'Nuevo en tienda:'];
+                                } else {
+                                    textos = ['Llévalo por solo:', 'Precio Surtitodo:', 'Paga solo:', 'Mejor precio:']; 
+                                }
+                                const randomText = textos[Math.floor(Math.random() * textos.length)]; 
+                                %>
                                 <div class="precio-texto-persuasivo"><%= randomText %></div>
                             <% } %>
                             <div class="precio-ahora"><span>$</span><%= producto.precio_final_fmt %></div>

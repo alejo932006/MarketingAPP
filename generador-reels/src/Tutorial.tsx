@@ -174,7 +174,7 @@ const EfectoClicPremium: React.FC<{ x: number; y: number }> = ({ x, y }) => {
 // -----------------------------------------------------------------
 // ✨ COMPONENTE PARA LOS TÍTULOS DINÁMICOS
 // -----------------------------------------------------------------
-const TituloAnimado: React.FC<{ texto: string }> = ({ texto }) => {
+const TituloAnimado: React.FC<{ texto: string; bottom?: string }> = ({ texto, bottom = '8%' }) => {
 	const frame = useCurrentFrame();
 	const { fps } = useVideoConfig();
 
@@ -184,7 +184,7 @@ const TituloAnimado: React.FC<{ texto: string }> = ({ texto }) => {
 
 	return (
 		<div style={{
-			position: 'absolute', bottom: '8%', left: 0, width: '100%', display: 'flex', justifyContent: 'center',
+			position: 'absolute', bottom: bottom, left: 0, width: '100%', display: 'flex', justifyContent: 'center',
 			transform: `translateY(${moverY}px)`, opacity: opacidad, zIndex: 20
 		}}>
 			<Audio src={staticFile('click-sound.mp3')} volume={0.6} />
@@ -238,6 +238,17 @@ export const TutorialReel: React.FC<z.infer<typeof tutorialSchema>> = ({ company
 	// const pulsoAura = interpolate(Math.sin(frame / 10), [-1, 1], [0.1, 0.35]); // ELIMINADA
 
 	const progreso = interpolate(frame, [0, duracionVideo], [0, 100], { extrapolateRight: 'clamp' });
+	
+	// 🚀 NUEVO EFECTO 2: Zoom in dinámico (Para el Paso 4: Carrito)
+	// Empieza a acercarse en el frame 580, se queda grande del 600 al 680, y se aleja en el 700
+	const zoomExtra = interpolate(
+		frame, 
+		[490, 600, 900, 960], 
+		[0, 0.2, 0.2, 0], 
+		{ extrapolateRight: 'clamp', extrapolateLeft: 'clamp' }
+	);
+	// Sumamos el tamaño original del celular + el zoom extra
+	const escalaFinal = scale + zoomExtra;
 
 	// 💎 MEJORA 1: REFLEJO DE CRISTAL (Glass Glare) -- ELIMINADO
 	// Pasa de izquierda a derecha en 30 frames, y descansa 120 frames (ciclo de 150 frames = 5 segundos)
@@ -250,7 +261,7 @@ export const TutorialReel: React.FC<z.infer<typeof tutorialSchema>> = ({ company
 			fontFamily: 'Poppins, sans-serif' 
 		}}>
 			
-			<Audio src={staticFile('vip-music.mp3')} volume={0.08} loop />
+			<Audio src={staticFile('vip-music.mp3')} volume={0.2} loop />
 			
 			{/* 🪄 ANIMACIONES DE FONDO MULTICOLOR BRILLANTE (Mejora final) */}
 			<BackgroundDecorations />
@@ -277,13 +288,16 @@ export const TutorialReel: React.FC<z.infer<typeof tutorialSchema>> = ({ company
 
 					{/* MARCO DEL CELULAR */}
 					<div style={{
-						height: '70%', aspectRatio: '9/16', backgroundColor: '#111', borderRadius: '45px', border: '12px solid #222', 
-						boxShadow: '0 0 50px rgba(255,195,0,0.15), 0 30px 60px rgba(0,0,0,0.8)', overflow: 'hidden',
-						transform: `scale(${scale})`, position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center',
-						zIndex: 5
-					}}>
-						{/* Video original MUTEADO al 50% */}
-						<Video src={staticFile(videoFileName)} style={{ height: '100%', width: '100%', objectFit: 'cover' }} volume={0.5} />
+                        height: '70%', aspectRatio: '9/16', backgroundColor: '#111', borderRadius: '45px', border: '12px solid #222', 
+                        boxShadow: '0 0 50px rgba(255,195,0,0.15), 0 30px 60px rgba(0,0,0,0.8)', overflow: 'hidden',
+                        transform: `scale(${escalaFinal})`, position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center',
+                        zIndex: 5
+                    }}>
+						{/* 1. Video original 100% SILENCIADO usando la propiedad 'muted' */}
+						<Video src={staticFile(videoFileName)} style={{ height: '100%', width: '100%', objectFit: 'cover' }} muted />
+						
+						{/* 2. 🎙️ NUEVO AUDIO MEJORADO EN AUDITION */}
+						<Audio src={staticFile('Voz_Video_Final.wav')} volume={0.7} />
 						
 						{/* 💎 ELIMINADO: Efecto de Cristal (Glass Glare) para máxima nitidez */}
 						{/* <div style={{
@@ -347,10 +361,25 @@ export const TutorialReel: React.FC<z.infer<typeof tutorialSchema>> = ({ company
 					<TituloAnimado texto="Paso 3: Agrega los productos 🛵" />
 				</Sequence>
 				<Sequence from={600} durationInFrames={100}>
-					<TituloAnimado texto="Paso 4: Da click en el carrito" />
+					{/* Le ponemos bottom="20%" para subirlo y que no tape la mano */}
+					<TituloAnimado texto="Paso 4: Da click en el carrito" bottom="20%" />
 				</Sequence>
 				<Sequence from={840} durationInFrames={100}>
 					<TituloAnimado texto="Paso 5: Llena el formulario" />
+				</Sequence>
+				{/* 🛵 EFECTO 3: Sticker Flotante de Domicilios */}
+				<Sequence from={450} durationInFrames={duracionVideo - 450}>
+					<div style={{
+						position: 'absolute', top: '22%', right: '2%',
+						background: '#25D366', color: 'white', padding: '15px 25px',
+						borderRadius: '30px', fontWeight: '900', fontSize: '28px',
+						boxShadow: '0 10px 20px rgba(37, 211, 102, 0.4)',
+						border: '4px solid white',
+						transform: `rotate(12deg) scale(${1 + Math.sin(frame / 8) * 0.05})`,
+						zIndex: 20
+					}}>
+						🛵 ¡Pide sin salir de casa!
+					</div>
 				</Sequence>
 
 				{/* 🎉 EXPLOSIÓN DE ÉXITO EN EL PASO 5 */}

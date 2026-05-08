@@ -6,11 +6,13 @@ const { exec } = require('child_process');
 const fs = require('fs');
 const { bundle } = require('@remotion/bundler');
 const { selectComposition, renderMedia } = require('@remotion/renderer');
+const multer = require('multer');
 
 const app = express();
 app.set('view engine', 'ejs');
 // Middleware para poder recibir JSON desde el panel
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'generador-reels', 'public')));
 
 // 1. Ruta para mostrar el Panel de Control
 app.get('/', (req, res) => {
@@ -99,10 +101,27 @@ app.post('/generar-video', async (req, res) => {
         return res.status(400).send('No se seleccionaron productos');
     }
 
-    // --- 🕒 AJUSTE DE TIEMPO ---
-    // Cambia 180 por el número de frames que pusiste en Remotion (180 frames = 6 segundos)
-    const framesPorProducto = 180; 
+    // --- 🕒 AJUSTE DE TIEMPO DINÁMICO SEGÚN LA PLANTILLA ---
+    let framesPorProducto = 180; 
+    let framesFinales = 150;
 
+    // Ajustamos la matemática dependiendo de la plantilla elegida en el select
+    if (plantillaVideo === 'ReelBrutalismo') {
+        framesPorProducto = 90;
+        framesFinales = 90;
+    } else if (plantillaVideo === 'ReelAraStyle') {
+        // La plantilla estilo Ara dura 180 frames en TOTAL (fijo, no se multiplica)
+        framesPorProducto = 0; 
+        framesFinales = 180;
+    } else if (plantillaVideo === 'ReelLanzamiento') {
+        // El de lanzamiento tiene la misma duración que el clásico
+        framesPorProducto = 180;
+        framesFinales = 150;
+    } else if (plantillaVideo === 'ReelTemporada') {
+        // 🔥 FIJO PARA 4 PRODUCTOS: 900 frames exactos (15 segundos a 60fps)
+        framesTotales = 900; 
+    }
+    
     console.log(`🎬 Iniciando renderizado de video (${plantillaVideo}) para ${idsSeleccionados.length} productos...`);
 
     try {
@@ -141,13 +160,12 @@ app.post('/generar-video', async (req, res) => {
             };
         });
 
-        // Calculamos la duración total del video para enviársela a Remotion
-        // Calculamos el tiempo de los productos + 150 frames (5 segundos) de la escena final
-        const framesTotales = (productosVideo.length * framesPorProducto) + 150;
+        // Calculamos la duración total del video con las variables dinámicas
+        const framesTotales = (productosVideo.length * framesPorProducto) + framesFinales;
 
         const videoProps = { 
             productos: productosVideo,
-            companyUrl: "surtitodoideal.com" // Asegúrate de enviarla si tu plantilla la requiere
+            companyUrl: "surtitodoideal.com" 
         };
 
         const remotionFolder = path.join(__dirname, 'generador-reels');
@@ -158,7 +176,6 @@ app.post('/generar-video', async (req, res) => {
         const idComposicion = plantillaVideo || 'PromoReel';
 
         // 🚀 MODIFICACIÓN DEL COMANDO:
-        // Agregamos --frames=${framesTotales} para que Remotion renderice el tiempo exacto
         const comando = `npx remotion render src/index.ts ${idComposicion} "${videoSalida}" --props=./datos-video.json --frames=0-${framesTotales - 1}`;
         exec(comando, { cwd: remotionFolder }, (error, stdout, stderr) => {
             if (error) {
@@ -166,7 +183,7 @@ app.post('/generar-video', async (req, res) => {
                 return res.status(500).send('Error al generar el video');
             }
             
-            console.log(`✅ Video de ${framesTotales} frames generado con éxito!`);
+            console.log(`✅ Video de ${framesTotales} frames generado con éxito! (${plantillaVideo})`);
             res.json({ urlVideo: '/oferta.mp4' }); 
         });
 
@@ -224,6 +241,74 @@ app.post('/render-tutorial', async (req, res) => {
     }
 });
 
+
+// --- CONFIGURACIÓN DE MULTER A PRUEBA DE BALAS ---
+const uploadDir = path.join(__dirname, 'generador-reels', 'public', 'uploads');
+
+// 1. SOLUCIÓN AL ERROR HTML: Creamos la carpeta a la fuerza si no existe
+if (!fs.existsSync(uploadDir)) {
+    console.log("🛠️ Creando carpeta uploads automáticamente...");
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
+
+// --- RUTA PARA GENERAR EL REEL DEL CLIENTE ---
+app.post('/generar-reel-cliente', upload.single('clientFoto'), async (req, res) => {
+    try {
+        console.log("⏳ Generando Reel de Cliente...");
+        
+        const { clientName, propertyAddress } = req.body;
+        const fotoRuta = `/uploads/${req.file.filename}`; 
+        
+        const inputProps = {
+            clientName: clientName || "CLIENTE FELIZ",
+            propertyAddress: propertyAddress || "Surtitodo",
+            clientImageUrl: `http://localhost:4000${fotoRuta}`,
+            logoImageUrl: `http://localhost:4000/icon.png`
+        };
+
+        // 2. SOLUCIÓN A LA RUTA DE REMOTION: Ahora apunta a la carpeta generador-reels
+        const bundleLocation = await bundle({
+            entryPoint: path.resolve('./generador-reels/src/index.ts'),
+            webpackOverride: (config) => config,
+        });
+        
+        const composition = await selectComposition({
+            serveUrl: bundleLocation,
+            id: 'OfferWonReel1', 
+            inputProps,
+        });
+
+        const nombreVideo = `reel_cliente_${Date.now()}.mp4`;
+        const outputLocation = path.resolve(`./public/${nombreVideo}`); 
+        
+        await renderMedia({
+            composition,
+            serveUrl: bundleLocation,
+            codec: 'h264',
+            outputLocation,
+            inputProps,
+            concurrency: 1,
+        });
+
+        console.log("✅ ¡Reel de cliente renderizado con éxito!");
+        res.json({ success: true, message: 'Video creado', url: `/${nombreVideo}` });
+
+    } catch (error) {
+        console.error("❌ Error renderizando el Reel del cliente:", error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // --- NUEVO PUENTE (PROXY) PARA EVITAR CORS ---
 app.get('/api/local-products', async (req, res) => {
     try {
@@ -234,6 +319,23 @@ app.get('/api/local-products', async (req, res) => {
     } catch (error) {
         console.error('Error en el puente:', error);
         res.status(500).json({ error: 'Error trayendo productos' });
+    }
+});
+
+// NUEVO PUENTE (PROXY) PARA ESTANCADOS
+app.get('/api/local-estancados', async (req, res) => {
+    try {
+        // CORRECCIÓN CLAVE: Apuntar a la ruta de compras
+        const response = await fetch('https://api.surtitodoideal.com/api/compras/estancados');
+        
+        console.log(`Estado de respuesta API Surtitodo: ${response.status}`); // <-- Esto nos dirá si la encuentra o no
+        
+        const data = await response.json();
+        res.json(data);
+    } catch (error) {
+        console.error('Error en el puente de estancados:', error);
+        // Enviar un array vacío en caso de error para que el frontend no colapse
+        res.json([]); 
     }
 });
 
