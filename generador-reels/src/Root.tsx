@@ -8,6 +8,8 @@ import { ReelLanzamiento } from './ReelLanzamiento';
 import { ReelAra } from './ReelAra';
 import { PodcastUniversidadCompleto } from './PodcastUniversidad';
 import { ReelTemporada } from './ReelTemporada';
+import { ReelCinematico } from './ReelCinematico';
+import { ReelCarnaval } from './ReelCarnaval';
 
 export const RemotionRoot: React.FC = () => {
 	
@@ -158,6 +160,41 @@ export const RemotionRoot: React.FC = () => {
 				height={1920}
 				schema={promoSchema}
 				defaultProps={datosSimulados} 
+			/>
+
+			<Composition
+				id="ReelCinematico"
+				component={ReelCinematico}
+				durationInFrames={150}
+				fps={30}
+				width={1080}
+				height={1920}
+				defaultProps={{
+				marca: "EDICIÓN ESPECIAL",
+				nombreProducto: "YAMAHA NMAX",
+				precio: "$15.000.000",
+				// Una imagen en PNG sin fondo se verá espectacular con la rotación 3D
+				imagenProducto: "url_de_la_moto_en_png.png", 
+				}}
+			/>
+
+			<Composition
+				id="ReelCarnaval"
+				component={ReelCarnaval}
+				durationInFrames={900} // 120 + (4 * 150) + 180 + margen
+				fps={60}
+				width={1080}
+				height={1920}
+				schema={promoSchema}
+				defaultProps={{
+					companyUrl: "surtitodoideal.com",
+					productos: [
+						{ productName: "Mango Tomy", imageUrl: "https://api.surtitodoideal.com/static/icon.png", precio: "3.200", precioAntes: "4.500", porcentaje: 28 },
+						{ productName: "Piña Oro Miel", imageUrl: "https://api.surtitodoideal.com/static/icon.png", precio: "2.900", precioAntes: "3.800", porcentaje: 23 },
+						{ productName: "Aguacate Hass", imageUrl: "https://api.surtitodoideal.com/static/icon.png", precio: "4.800", precioAntes: "6.000", porcentaje: 20 },
+						{ productName: "Manzana Roja", imageUrl: "https://api.surtitodoideal.com/static/icon.png", precio: "1.900", precioAntes: "2.500", porcentaje: 24 }
+					]
+				}}
 			/>
 
 		</>

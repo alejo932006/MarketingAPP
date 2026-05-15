@@ -120,6 +120,10 @@ app.post('/generar-video', async (req, res) => {
     } else if (plantillaVideo === 'ReelTemporada') {
         // 🔥 FIJO PARA 4 PRODUCTOS: 900 frames exactos (15 segundos a 60fps)
         framesTotales = 900; 
+    } else if (plantillaVideo === 'ReelCarnaval') { // <-- AGREGA ESTO
+        // 120 intro + (150 x cant. productos) + 180 outro
+        framesPorProducto = 150;
+        framesFinales = 120 + 180; // Intro + Outro
     }
     
     console.log(`🎬 Iniciando renderizado de video (${plantillaVideo}) para ${idsSeleccionados.length} productos...`);

@@ -395,6 +395,7 @@
                 <label>Línea Gráfica (Estilo):</label>
                 <select id="selector-tema">
                     <option value="clasico">🔴 Clásico Surtitodo</option>
+                    <option value="carnaval">🥳 ¡Gran Carnaval!</option>
                     <option value="vip">⚫ VIP Premium</option>
                     <option value="fruver">🟢 Frescura Natural</option>
                     <option value="mercado">🍅 Estilo Mercado</option>
@@ -498,7 +499,13 @@
             <button id="tab-todos" onclick="cambiarPestana('todos')">🛒 Todo el Catálogo</button>
             <button id="tab-estancados" onclick="cambiarPestana('estancados')" style="color: #e11d48; background: #ffe4e6; border: 1px solid #fda4af;">⚠️ Zona de Remate</button>
         </div>
-        <input type="text" id="buscador" class="search-box" placeholder="🔍 Buscar producto por nombre..." oninput="reiniciarYRenderizar()">
+        
+        <div style="display: flex; gap: 10px; flex: 1; min-width: 250px; justify-content: flex-end; flex-wrap: wrap;">
+            <select id="filtro-linea" class="search-box" style="flex: 1; min-width: 150px; cursor: pointer; padding: 12px; font-family: 'Poppins', sans-serif;" onchange="reiniciarYRenderizar()">
+                <option value="">🛒 Todas las Líneas</option>
+            </select>
+            <input type="text" id="buscador" class="search-box" style="flex: 2; min-width: 200px;" placeholder="🔍 Buscar producto por nombre..." oninput="reiniciarYRenderizar()">
+        </div>
     </div>
 
     <div id="grid-productos" class="grid">
@@ -520,7 +527,9 @@
                 <option value="ReelBrutalismo">🚧 Reel Brutalista (Impacto)</option>
                 <option value="ReelLanzamiento">🚀 Reel: Nuevo Lanzamiento (Cyber)</option>
                 <option value="ReelAraStyle">🛒 Reel Impacto (1 Producto Máximo)</option>
-                <option value="ReelTemporada">🌟 Reel: Especial de Temporada</option> </select>
+                <option value="ReelTemporada">🌟 Reel: Especial de Temporada</option>
+                <option value="ReelCinematico">🎥 Reel Cinemático (Oferta 3D)</option>
+                <option value="ReelCarnaval">🍉 Reel: Carnaval Frutas y Verduras</option> </select>
             <button id="btn-generar-video" class="btn-action btn-dark" onclick="generarVideoRemotion()">
                 🎬 Crear Reel
             </button>
@@ -558,11 +567,31 @@
         let limiteProductos = 4;
         let inventarioEstancados = [];
 
+        function poblarLineas() {
+            const selectLinea = document.getElementById('filtro-linea');
+            
+            // Extraer líneas únicas y eliminar valores nulos o vacíos
+            const lineasUnicas = [...new Set(inventarioGlobal.map(p => p.linea_nombre).filter(Boolean))].sort();
+            
+            // Reiniciar el select
+            selectLinea.innerHTML = '<option value="">🛒 Todas las Líneas</option>';
+            
+            // Llenar con las opciones
+            lineasUnicas.forEach(linea => {
+                const option = document.createElement('option');
+                option.value = linea;
+                // Capitalizar para que se vea estético en el panel
+                option.textContent = linea.charAt(0).toUpperCase() + linea.slice(1).toLowerCase();
+                selectLinea.appendChild(option);
+            });
+        }
+
         async function cargarDatos() {
             try {
                 const res = await fetch('/api/local-products'); 
                 const data = await res.json();
                 inventarioGlobal = data.filter(p => p.proimagenurl && p.precio_venta_final > 0 && !p.oculto);
+                poblarLineas();
                 renderizarGrilla();
             } catch (error) {
                 document.getElementById('grid-productos').innerHTML = '<p style="color:red; grid-column: 1/-1; text-align: center;">Error conectando a la API.</p>';
@@ -627,6 +656,12 @@
                 productosFiltrados = inventarioGlobal;
             }
 
+            // NUEVO: Aplicar el filtro de línea si hay alguna seleccionada
+            if (filtroLinea !== "") {
+                productosFiltrados = productosFiltrados.filter(p => p.linea_nombre === filtroLinea);
+            }
+
+            // Filtro de búsqueda por texto (Se mantiene igual)
             if (busqueda) {
                 const terminos = busqueda.split(' ');
                 productosFiltrados = productosFiltrados.filter(p => {
