@@ -642,6 +642,11 @@
         function renderizarGrilla() {
             const grid = document.getElementById('grid-productos');
             const busqueda = document.getElementById('buscador').value.toLowerCase();
+            
+            // 🚨 AQUÍ ESTABA EL DETALLE: Faltaba capturar el valor del select
+            const elementoFiltro = document.getElementById('filtro-linea');
+            const filtroLinea = elementoFiltro ? elementoFiltro.value : ""; 
+            
             const btnCargarMas = document.getElementById('btn-cargar-mas');
             
             if (paginaActual === 1) grid.innerHTML = '';
@@ -651,7 +656,7 @@
             if (pestanaActual === 'ofertas') {
                 productosFiltrados = inventarioGlobal.filter(p => p.en_promo == 1 && parseFloat(p.descuento_promo) > 0);
             } else if (pestanaActual === 'estancados') {
-                productosFiltrados = inventarioEstancados; // La nueva variable global
+                productosFiltrados = inventarioEstancados;
             } else {
                 productosFiltrados = inventarioGlobal;
             }
@@ -670,7 +675,7 @@
                 });
             }
 
-            // 🛡️ ESCUDO ANTI-ERRORES: Si por algún motivo no es un Array, lo forzamos a ser uno vacío
+            // 🛡️ ESCUDO ANTI-ERRORES: Si por algún motivo no es un Array...
             if (!Array.isArray(productosFiltrados)) {
                 console.warn("⚠️ Advertencia: productosFiltrados no es un Array. Forzando corrección.");
                 productosFiltrados = [];
@@ -810,6 +815,14 @@
                         precioFinal = Math.max(0, precioFinal - desc);
                     }
                 }
+                
+                // --- NUEVA LÓGICA: CONVERSIÓN DE KILOS A LIBRAS ---
+                const regexKilos = /(?:x\s*)?[0-9.,]*\s*(kg|kl)\b/i;
+                if (regexKilos.test(nombreLimpio)) {
+                    precioFinal = precioFinal / 2;
+                    nombreLimpio = nombreLimpio.replace(regexKilos, '').trim() + ' x Libra';
+                }
+                // --------------------------------------------------
                 
                 precioFinal = Math.round(precioFinal);
                 let precioFormato = precioFinal.toLocaleString('es-CO');

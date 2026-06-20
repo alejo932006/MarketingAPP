@@ -48,13 +48,26 @@ app.post('/generar-volante', async (req, res) => {
                 }
             }
 
+            // --- NUEVA LÓGICA: CONVERSIÓN DE KILOS A LIBRAS ---
+            let nombreLimpio = p.nombre.charAt(0).toUpperCase() + p.nombre.slice(1).toLowerCase();
+            const regexKilos = /(?:x\s*)?[0-9.,]*\s*(kg|kl)\b/i;
+
+            if (regexKilos.test(nombreLimpio)) {
+                // Dividimos los precios a la mitad
+                precioFinal = precioFinal / 2;
+                precioAntes = precioAntes / 2;
+                // Limpiamos la mención de kilo y añadimos "x Libra"
+                nombreLimpio = nombreLimpio.replace(regexKilos, '').trim() + ' x Libra';
+            }
+            // --------------------------------------------------
+
             // REDONDEAMOS PARA EVITAR DECIMALES EN LOS VOLANTES
             precioFinal = Math.round(precioFinal);
             precioAntes = Math.round(precioAntes);
 
             return {
                 ...p,
-                nombre_limpio: p.nombre.charAt(0).toUpperCase() + p.nombre.slice(1).toLowerCase(),
+                nombre_limpio: nombreLimpio,
                 precio_final_fmt: precioFinal.toLocaleString('es-CO'),
                 precio_antes_fmt: precioAntes.toLocaleString('es-CO'),
                 porcentaje: Math.round(porcentaje)
@@ -104,6 +117,7 @@ app.post('/generar-video', async (req, res) => {
     // --- 🕒 AJUSTE DE TIEMPO DINÁMICO SEGÚN LA PLANTILLA ---
     let framesPorProducto = 180; 
     let framesFinales = 150;
+    let framesTotales = 0; // ✅ NUEVO: DECLÁRALA AQUÍ ARRIBA
 
     // Ajustamos la matemática dependiendo de la plantilla elegida en el select
     if (plantillaVideo === 'ReelBrutalismo') {
@@ -155,8 +169,17 @@ app.post('/generar-video', async (req, res) => {
                 }
             }
 
+            // --- NUEVA LÓGICA: CONVERSIÓN DE KILOS A LIBRAS ---
+            const regexKilos = /(?:x\s*)?[0-9.,]*\s*(kg|kl)\b/i;
+            if (regexKilos.test(nombreLimpio)) {
+                precioFinal = precioFinal / 2;
+                precioAntes = precioAntes / 2;
+                nombreLimpio = nombreLimpio.replace(regexKilos, '').trim() + ' x Libra';
+            }
+            // --------------------------------------------------
+
             return {
-                productName: nombreLimpio,
+                productName: nombreLimpio, // <-- Ya viene procesado
                 imageUrl: urlImagen,
                 precio: Math.round(precioFinal).toLocaleString('es-CO'),
                 precioAntes: Math.round(precioAntes).toLocaleString('es-CO'),
@@ -165,7 +188,10 @@ app.post('/generar-video', async (req, res) => {
         });
 
         // Calculamos la duración total del video con las variables dinámicas
-        const framesTotales = (productosVideo.length * framesPorProducto) + framesFinales;
+        // Si no tiene un valor fijo asignado arriba, calculamos el dinámico:
+        if (framesTotales === 0) {
+            framesTotales = (productosVideo.length * framesPorProducto) + framesFinales;
+        }
 
         const videoProps = { 
             productos: productosVideo,

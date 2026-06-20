@@ -10,6 +10,7 @@ import { PodcastUniversidadCompleto } from './PodcastUniversidad';
 import { ReelTemporada } from './ReelTemporada';
 import { ReelCinematico } from './ReelCinematico';
 import { ReelCarnaval } from './ReelCarnaval';
+import { ElectoralReel, electoralReelSchema } from './ElectoralReel';
 
 export const RemotionRoot: React.FC = () => {
 	
@@ -197,6 +198,23 @@ export const RemotionRoot: React.FC = () => {
 				}}
 			/>
 
+			<Composition
+				id="ElectoralReel"
+				component={ElectoralReel}
+				durationInFrames={600}
+				fps={30}
+				width={1080}
+				height={1920}
+				schema={electoralReelSchema}
+				defaultProps={{
+					discountPercent: 2,
+					validDateText: 'Válido mañana lunes 1 de junio',
+					logoFileName: 'icon.png',
+					backgroundImageUrl:
+						'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1080&q=80',
+					companyUrl: 'surtitodoideal.com',
+				}}
+			/>
 		</>
 	);
 };
