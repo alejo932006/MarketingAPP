@@ -7,6 +7,8 @@ const fs = require('fs');
 const { bundle } = require('@remotion/bundler');
 const { selectComposition, renderMedia } = require('@remotion/renderer');
 const multer = require('multer');
+const { crearMarketingData } = require('./lib/marketing-data');
+const { crearColaLote } = require('./lib/cola-lote');
 
 const PORT = 4000;
 const HOST = '0.0.0.0';
@@ -44,6 +46,8 @@ const publicDir = path.join(__dirname, 'public');
 if (!fs.existsSync(publicDir)) {
     fs.mkdirSync(publicDir, { recursive: true });
 }
+
+const marketing = crearMarketingData(publicDir);
 
 const REMOTION_ENTRY = path.resolve(__dirname, 'generador-reels/src/index.ts');
 const REMOTION_PUBLIC = path.resolve(__dirname, 'generador-reels/public');
@@ -166,7 +170,7 @@ async function getRemotionBundle() {
     return bundleInFlight;
 }
 
-async function renderizarReel({ compositionId, inputProps, outputLocation, frameRange }) {
+async function renderizarReel({ compositionId, inputProps, outputLocation, durationInFrames }) {
     if (renderEnCurso) {
         throw new Error('Ya hay un video renderizándose. Espera a que termine.');
     }
@@ -191,9 +195,17 @@ async function renderizarReel({ compositionId, inputProps, outputLocation, frame
             browserExecutable: chromePath || undefined,
         });
 
+        const duracionRender = durationInFrames || composition.durationInFrames;
+        console.log(`   📐 Duración del render: ${duracionRender} frames`);
+
         const hilos = Math.min(Math.max(os.cpus().length - 1, 2), 6);
-        const renderOptions = {
-            composition,
+        console.log(`🎬 Renderizando video (${hilos} hilos, ${duracionRender} frames)...`);
+
+        await renderMedia({
+            composition: {
+                ...composition,
+                durationInFrames: duracionRender,
+            },
             serveUrl: bundleLocation,
             codec: 'h264',
             outputLocation,
@@ -209,20 +221,7 @@ async function renderizarReel({ compositionId, inputProps, outputLocation, frame
                     mensaje: `Renderizando frames... ${pctRender}%`,
                 };
             },
-        };
-
-        if (frameRange) {
-            renderOptions.frameRange = frameRange;
-        }
-
-        renderProgress = {
-            fase: 'render',
-            porcentaje: 20,
-            mensaje: `Renderizando con ${hilos} núcleos...`,
-        };
-        console.log(`🎬 Renderizando video (${hilos} hilos)...`);
-
-        await renderMedia(renderOptions);
+        });
 
         renderProgress = {
             fase: 'finalizando',
@@ -234,6 +233,171 @@ async function renderizarReel({ compositionId, inputProps, outputLocation, frame
         renderProgress = { fase: 'idle', porcentaje: 0, mensaje: 'Listo' };
     }
 }
+
+async function obtenerProductosApi() {
+    const response = await fetch('https://api.surtitodoideal.com/api/products');
+    const data = await response.json();
+    return Array.isArray(data) ? data : data.data;
+}
+
+function procesarProductosVolante(seleccionados) {
+    return seleccionados.map((p) => {
+        let precioAntes = Number(p.precio_venta_final);
+        let precioFinal = precioAntes;
+        let porcentaje = 0;
+
+        if (p.en_promo == 1 && parseFloat(p.descuento_promo) > 0) {
+            const desc = parseFloat(p.descuento_promo);
+            if (desc <= 100) {
+                precioFinal = precioAntes * (1 - desc / 100);
+                porcentaje = desc;
+            } else {
+                precioFinal = Math.max(0, precioAntes - desc);
+                porcentaje = Math.round((desc / precioAntes) * 100);
+            }
+        }
+
+        let nombreLimpio = p.nombre.charAt(0).toUpperCase() + p.nombre.slice(1).toLowerCase();
+        const regexKilos = /(?:x\s*)?[0-9.,]*\s*(kg|kl)\b/i;
+        if (regexKilos.test(nombreLimpio)) {
+            precioFinal = precioFinal / 2;
+            precioAntes = precioAntes / 2;
+            nombreLimpio = nombreLimpio.replace(regexKilos, '').trim() + ' x Libra';
+        }
+
+        precioFinal = Math.round(precioFinal);
+        precioAntes = Math.round(precioAntes);
+
+        return {
+            ...p,
+            nombre_limpio: nombreLimpio,
+            precio_final_fmt: precioFinal.toLocaleString('es-CO'),
+            precio_antes_fmt: precioAntes.toLocaleString('es-CO'),
+            porcentaje: Math.round(porcentaje),
+        };
+    });
+}
+
+async function generarVolanteBuffer({ idsSeleccionados, plantilla, tema, tituloPrincipal, textoTagline, orientacion }) {
+    const todosLosProductos = await obtenerProductosApi();
+    const seleccionados = todosLosProductos.filter((p) =>
+        idsSeleccionados.includes(p.id_producto.toString().trim())
+    );
+    const productosOferta = procesarProductosVolante(seleccionados);
+
+    const htmlTemplate = await ejs.renderFile(path.join(__dirname, 'views', 'volante.ejs'), {
+        productos: productosOferta,
+        baseUrl: 'https://api.surtitodoideal.com',
+        plantilla: plantilla || '4',
+        tema: tema || 'clasico',
+        tituloPrincipal: tituloPrincipal || 'Finde de Ahorro',
+        textoTagline: textoTagline || 'Solo por tiempo limitado',
+        orientacion: orientacion || 'feed',
+    });
+
+    const browser = await launchPuppeteer();
+    try {
+        const page = await browser.newPage();
+        return await capturarVolante(page, htmlTemplate, orientacion);
+    } finally {
+        await browser.close();
+    }
+}
+
+function calcularFramesVideo(plantillaVideo, cantidadProductos) {
+    let framesPorProducto = 180;
+    let framesFinales = 150;
+    let framesTotales = 0;
+
+    if (plantillaVideo === 'ReelBrutalismo') {
+        framesPorProducto = 90;
+        framesFinales = 90;
+    } else if (plantillaVideo === 'ReelAraStyle') {
+        framesPorProducto = 0;
+        framesFinales = 180;
+    } else if (plantillaVideo === 'ReelLanzamiento') {
+        framesPorProducto = 180;
+        framesFinales = 150;
+    } else if (plantillaVideo === 'ReelTemporada') {
+        framesTotales = 900;
+    } else if (plantillaVideo === 'ReelCarnaval') {
+        framesPorProducto = 150;
+        framesFinales = 300;
+    }
+
+    if (framesTotales === 0) {
+        framesTotales = cantidadProductos * framesPorProducto + framesFinales;
+    }
+    return framesTotales;
+}
+
+function prepararProductosVideo(listaInventario, idsSeleccionados) {
+    return listaInventario
+        .filter((p) => idsSeleccionados.includes(p.id_producto.toString().trim()))
+        .map((p) => {
+            let nombreLimpio = p.nombre.charAt(0).toUpperCase() + p.nombre.slice(1).toLowerCase();
+            let urlImagen = p.proimagenurl;
+            if (!urlImagen.startsWith('http')) urlImagen = `https://api.surtitodoideal.com${urlImagen}`;
+
+            let precioAntes = Number(p.precio_venta_final);
+            let precioFinal = precioAntes;
+            let porcentaje = 0;
+
+            if (p.en_promo == 1 && parseFloat(p.descuento_promo) > 0) {
+                const desc = parseFloat(p.descuento_promo);
+                if (desc <= 100) {
+                    precioFinal = precioAntes * (1 - desc / 100);
+                    porcentaje = desc;
+                } else {
+                    precioFinal = Math.max(0, precioAntes - desc);
+                    porcentaje = Math.round((desc / precioAntes) * 100);
+                }
+            }
+
+            const regexKilos = /(?:x\s*)?[0-9.,]*\s*(kg|kl)\b/i;
+            if (regexKilos.test(nombreLimpio)) {
+                precioFinal = precioFinal / 2;
+                precioAntes = precioAntes / 2;
+                nombreLimpio = nombreLimpio.replace(regexKilos, '').trim() + ' x Libra';
+            }
+
+            return {
+                productName: nombreLimpio,
+                imageUrl: urlImagen,
+                precio: Math.round(precioFinal).toLocaleString('es-CO'),
+                precioAntes: Math.round(precioAntes).toLocaleString('es-CO'),
+                porcentaje: Math.round(porcentaje),
+            };
+        });
+}
+
+async function generarVideoInterno({ idsSeleccionados, plantillaVideo }) {
+    const listaInventario = await obtenerProductosApi();
+    const productosVideo = prepararProductosVideo(listaInventario, idsSeleccionados);
+    const framesTotales = calcularFramesVideo(plantillaVideo, productosVideo.length);
+    const idComposicion = plantillaVideo || 'PromoReel';
+    const nombreVideo = `reel_${idComposicion}_${Date.now()}.mp4`;
+    const outputLocation = path.join(publicDir, nombreVideo);
+
+    await renderizarReel({
+        compositionId: idComposicion,
+        inputProps: { productos: productosVideo, companyUrl: 'surtitodoideal.com' },
+        outputLocation,
+        durationInFrames: framesTotales,
+    });
+
+    verificarVideoGenerado(outputLocation);
+    return { urlVideo: `/videos/${nombreVideo}`, nombreArchivo: nombreVideo, framesTotales };
+}
+
+const colaLote = crearColaLote({
+    marketing,
+    publicDir,
+    obtenerProductosApi,
+    capturarVolanteConBrowser: generarVolanteBuffer,
+    generarVideoInterno,
+    validarSeleccion: (opts) => marketing.validarSeleccion(opts),
+});
 
 const app = express();
 app.set('view engine', 'ejs');
@@ -263,195 +427,254 @@ app.get('/videos/:filename', (req, res) => {
 // 2. Ruta POST que recibe los IDs seleccionados y toma la foto
 app.post('/generar-volante', async (req, res) => {
     try {
-        const { idsSeleccionados, plantilla, tema, tituloPrincipal, textoTagline, orientacion } = req.body; 
-        
-        console.log(`⏳ Generando volante... Formato: ${orientacion}`);
-        const response = await fetch('https://api.surtitodoideal.com/api/products');
-        const todosLosProductos = await response.json();
+        const { idsSeleccionados, plantilla, tema, tituloPrincipal, textoTagline, orientacion } = req.body;
 
-        // Filtramos solo los productos que elegiste en el panel
-        const seleccionados = todosLosProductos.filter(p => idsSeleccionados.includes(p.id_producto.trim()));
-
-        // Aplicamos la misma lógica de Surtitodo Ideal (app.js) para las promociones
-        const productosOferta = seleccionados.map(p => {
-            let precioAntes = Number(p.precio_venta_final);
-            let precioFinal = precioAntes;
-            let porcentaje = 0;
-
-            if (p.en_promo == 1 && parseFloat(p.descuento_promo) > 0) {
-                let desc = parseFloat(p.descuento_promo);
-                if (desc <= 100) {
-                    precioFinal = precioAntes * (1 - (desc / 100));
-                    porcentaje = desc;
-                } else {
-                    precioFinal = Math.max(0, precioAntes - desc);
-                    porcentaje = Math.round((desc / precioAntes) * 100);
-                }
-            }
-
-            // --- NUEVA LÓGICA: CONVERSIÓN DE KILOS A LIBRAS ---
-            let nombreLimpio = p.nombre.charAt(0).toUpperCase() + p.nombre.slice(1).toLowerCase();
-            const regexKilos = /(?:x\s*)?[0-9.,]*\s*(kg|kl)\b/i;
-
-            if (regexKilos.test(nombreLimpio)) {
-                // Dividimos los precios a la mitad
-                precioFinal = precioFinal / 2;
-                precioAntes = precioAntes / 2;
-                // Limpiamos la mención de kilo y añadimos "x Libra"
-                nombreLimpio = nombreLimpio.replace(regexKilos, '').trim() + ' x Libra';
-            }
-            // --------------------------------------------------
-
-            // REDONDEAMOS PARA EVITAR DECIMALES EN LOS VOLANTES
-            precioFinal = Math.round(precioFinal);
-            precioAntes = Math.round(precioAntes);
-
-            return {
-                ...p,
-                nombre_limpio: nombreLimpio,
-                precio_final_fmt: precioFinal.toLocaleString('es-CO'),
-                precio_antes_fmt: precioAntes.toLocaleString('es-CO'),
-                porcentaje: Math.round(porcentaje)
-            };
+        const productos = await obtenerProductosApi();
+        const validacion = marketing.validarSeleccion({
+            idsSeleccionados,
+            productos,
+            plantillaVolante: plantilla,
+            modo: 'volante',
         });
-
-        // Renderizamos el diseño Premium
-        const htmlTemplate = await ejs.renderFile(path.join(__dirname, 'views', 'volante.ejs'), {
-            productos: productosOferta,
-            baseUrl: 'https://api.surtitodoideal.com',
-            plantilla: plantilla || '4',
-            tema: tema || 'clasico',
-            tituloPrincipal: tituloPrincipal || 'Finde de Ahorro',
-            textoTagline: textoTagline || 'Solo por tiempo limitado',
-            orientacion: orientacion || 'feed' // <-- LO PASAMOS A LA PLANTILLA
-        });
-
-        const browser = await launchPuppeteer();
-        try {
-            const page = await browser.newPage();
-            const imageBuffer = await capturarVolante(page, htmlTemplate, orientacion);
-            res.set('Content-Type', 'image/png');
-            res.send(imageBuffer);
-        } finally {
-            await browser.close();
+        if (!validacion.valido) {
+            return res.status(400).json({ error: validacion.errores.join(' '), validacion });
         }
 
+        console.log(`⏳ Generando volante... Formato: ${orientacion}`);
+        const imageBuffer = await generarVolanteBuffer({
+            idsSeleccionados,
+            plantilla,
+            tema,
+            tituloPrincipal,
+            textoTagline,
+            orientacion,
+        });
+
+        const campId = `vol_${Date.now()}`;
+        const campDir = path.join(marketing.campanasDir, campId);
+        fs.mkdirSync(campDir, { recursive: true });
+        const nombreArchivo = orientacion === 'historia' ? 'historia.png' : 'feed.png';
+        fs.writeFileSync(path.join(campDir, nombreArchivo), imageBuffer);
+
+        const seleccionados = productos.filter((p) =>
+            idsSeleccionados.includes(p.id_producto.toString().trim())
+        );
+        marketing.agregarHistorial({
+            tipo: 'volante',
+            titulo: tituloPrincipal || 'Finde de Ahorro',
+            tema: tema || 'clasico',
+            plantilla: plantilla || '4',
+            textoTagline: textoTagline || 'Solo por tiempo limitado',
+            orientacion: orientacion || 'feed',
+            idsSeleccionados,
+            nombresProductos: seleccionados.map((p) => p.nombre),
+            volante: `/campanas/${campId}/${nombreArchivo}`,
+        });
+
+        res.set('Content-Type', 'image/png');
+        res.send(imageBuffer);
     } catch (error) {
         console.error('❌ Error:', error);
         res.status(500).json({ error: 'Error generando el volante' });
     }
 });
 
-// --- NUEVA RUTA PARA GENERAR VIDEOS CON REMOTION ---
+// --- RUTA PARA GENERAR VIDEOS CON REMOTION ---
 app.post('/generar-video', async (req, res) => {
     const { idsSeleccionados, plantillaVideo } = req.body;
 
-    if (!idsSeleccionados || idsSeleccionados.length === 0) {
-        return res.status(400).send('No se seleccionaron productos');
-    }
-
-    // --- 🕒 AJUSTE DE TIEMPO DINÁMICO SEGÚN LA PLANTILLA ---
-    let framesPorProducto = 180; 
-    let framesFinales = 150;
-    let framesTotales = 0; // ✅ NUEVO: DECLÁRALA AQUÍ ARRIBA
-
-    // Ajustamos la matemática dependiendo de la plantilla elegida en el select
-    if (plantillaVideo === 'ReelBrutalismo') {
-        framesPorProducto = 90;
-        framesFinales = 90;
-    } else if (plantillaVideo === 'ReelAraStyle') {
-        // La plantilla estilo Ara dura 180 frames en TOTAL (fijo, no se multiplica)
-        framesPorProducto = 0; 
-        framesFinales = 180;
-    } else if (plantillaVideo === 'ReelLanzamiento') {
-        // El de lanzamiento tiene la misma duración que el clásico
-        framesPorProducto = 180;
-        framesFinales = 150;
-    } else if (plantillaVideo === 'ReelTemporada') {
-        // 🔥 FIJO PARA 4 PRODUCTOS: 900 frames exactos (15 segundos a 60fps)
-        framesTotales = 900; 
-    } else if (plantillaVideo === 'ReelCarnaval') { // <-- AGREGA ESTO
-        // 120 intro + (150 x cant. productos) + 180 outro
-        framesPorProducto = 150;
-        framesFinales = 120 + 180; // Intro + Outro
-    }
-    
-    console.log(`🎬 Iniciando renderizado de video (${plantillaVideo}) para ${idsSeleccionados.length} productos...`);
-
     try {
-        const response = await fetch('https://api.surtitodoideal.com/api/products');
-        const data = await response.json();
-        const listaInventario = Array.isArray(data) ? data : data.data;
-        
-        const productosVideo = listaInventario
-        .filter(p => idsSeleccionados.includes(p.id_producto.toString().trim()))
-        .map(p => {
-            let nombreLimpio = p.nombre.charAt(0).toUpperCase() + p.nombre.slice(1).toLowerCase();
-            let urlImagen = p.proimagenurl;
-            if (!urlImagen.startsWith('http')) urlImagen = `https://api.surtitodoideal.com${urlImagen}`;
-
-            let precioAntes = Number(p.precio_venta_final);
-            let precioFinal = precioAntes;
-            let porcentaje = 0;
-
-            if (p.en_promo == 1 && parseFloat(p.descuento_promo) > 0) {
-                let desc = parseFloat(p.descuento_promo);
-                if (desc <= 100) {
-                    precioFinal = precioAntes * (1 - (desc / 100));
-                    porcentaje = desc;
-                } else {
-                    precioFinal = Math.max(0, precioAntes - desc);
-                    porcentaje = Math.round((desc / precioAntes) * 100);
-                }
-            }
-
-            // --- NUEVA LÓGICA: CONVERSIÓN DE KILOS A LIBRAS ---
-            const regexKilos = /(?:x\s*)?[0-9.,]*\s*(kg|kl)\b/i;
-            if (regexKilos.test(nombreLimpio)) {
-                precioFinal = precioFinal / 2;
-                precioAntes = precioAntes / 2;
-                nombreLimpio = nombreLimpio.replace(regexKilos, '').trim() + ' x Libra';
-            }
-            // --------------------------------------------------
-
-            return {
-                productName: nombreLimpio, // <-- Ya viene procesado
-                imageUrl: urlImagen,
-                precio: Math.round(precioFinal).toLocaleString('es-CO'),
-                precioAntes: Math.round(precioAntes).toLocaleString('es-CO'),
-                porcentaje: Math.round(porcentaje)
-            };
+        const productos = await obtenerProductosApi();
+        const validacion = marketing.validarSeleccion({
+            idsSeleccionados,
+            productos,
+            plantillaVideo: plantillaVideo || 'PromoReel',
+            modo: 'video',
         });
-
-        // Calculamos la duración total del video con las variables dinámicas
-        // Si no tiene un valor fijo asignado arriba, calculamos el dinámico:
-        if (framesTotales === 0) {
-            framesTotales = (productosVideo.length * framesPorProducto) + framesFinales;
+        if (!validacion.valido) {
+            return res.status(400).json({ error: validacion.errores.join(' '), validacion });
         }
 
-        const videoProps = { 
-            productos: productosVideo,
-            companyUrl: "surtitodoideal.com" 
-        };
+        console.log(`🎬 Iniciando renderizado de video (${plantillaVideo}) para ${idsSeleccionados.length} productos...`);
+        const resultado = await generarVideoInterno({ idsSeleccionados, plantillaVideo });
 
-        const idComposicion = plantillaVideo || 'PromoReel';
-        const nombreVideo = `reel_${idComposicion}_${Date.now()}.mp4`;
-        const outputLocation = path.join(publicDir, nombreVideo);
-
-        await renderizarReel({
-            compositionId: idComposicion,
-            inputProps: videoProps,
-            outputLocation,
-            frameRange: [0, framesTotales - 1],
+        const seleccionados = productos.filter((p) =>
+            idsSeleccionados.includes(p.id_producto.toString().trim())
+        );
+        marketing.agregarHistorial({
+            tipo: 'reel',
+            plantillaVideo: plantillaVideo || 'PromoReel',
+            idsSeleccionados,
+            nombresProductos: seleccionados.map((p) => p.nombre),
+            reel: resultado.urlVideo,
         });
 
-        const tamano = verificarVideoGenerado(outputLocation);
-        console.log(`✅ Video de ${framesTotales} frames generado (${(tamano / 1024 / 1024).toFixed(1)} MB) — ${nombreVideo}`);
-        res.json({ urlVideo: `/videos/${nombreVideo}`, nombreArchivo: nombreVideo });
-
+        const tamano = fs.statSync(path.join(publicDir, resultado.nombreArchivo)).size;
+        console.log(`✅ Video generado (${(tamano / 1024 / 1024).toFixed(1)} MB) — ${resultado.nombreArchivo}`);
+        res.json({ urlVideo: resultado.urlVideo, nombreArchivo: resultado.nombreArchivo, validacion });
     } catch (error) {
         console.error('❌ Error renderizando video:', error);
         res.status(500).json({ error: error.message || 'Error al generar el video' });
+    }
+});
+
+// --- VALIDACIÓN PRE-GENERACIÓN ---
+app.post('/api/validar', async (req, res) => {
+    try {
+        const { idsSeleccionados, plantilla, plantillaVideo, modo } = req.body;
+        const productos = await obtenerProductosApi();
+        const validacion = marketing.validarSeleccion({
+            idsSeleccionados,
+            productos,
+            plantillaVolante: plantilla,
+            plantillaVideo,
+            modo: modo || 'ambos',
+        });
+        res.json(validacion);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- PRESETS ---
+app.get('/api/presets', (req, res) => {
+    res.json(marketing.leerJson(marketing.presetsPath, []));
+});
+
+app.post('/api/presets', (req, res) => {
+    const { nombre, config } = req.body;
+    if (!nombre || !config) {
+        return res.status(400).json({ error: 'Faltan nombre o configuración' });
+    }
+    const presets = marketing.leerJson(marketing.presetsPath, []);
+    const preset = {
+        id: `preset_${Date.now()}`,
+        nombre,
+        config,
+        fecha: new Date().toISOString(),
+    };
+    presets.unshift(preset);
+    marketing.guardarJson(marketing.presetsPath, presets);
+    res.json(preset);
+});
+
+app.delete('/api/presets/:id', (req, res) => {
+    const presets = marketing.leerJson(marketing.presetsPath, []);
+    const filtrados = presets.filter((p) => p.id !== req.params.id);
+    marketing.guardarJson(marketing.presetsPath, filtrados);
+    res.json({ ok: true });
+});
+
+// --- HISTORIAL ---
+app.get('/api/historial', (req, res) => {
+    res.json(marketing.leerJson(marketing.historialPath, []));
+});
+
+app.delete('/api/historial/:id', (req, res) => {
+    const historial = marketing.leerJson(marketing.historialPath, []);
+    marketing.guardarJson(
+        marketing.historialPath,
+        historial.filter((h) => h.id !== req.params.id)
+    );
+    res.json({ ok: true });
+});
+
+// --- CAMPAÑA COMPLETA ---
+let campanaProgress = { fase: 'idle', porcentaje: 0, mensaje: 'Listo' };
+
+app.get('/api/campana-progress', (req, res) => {
+    res.json(campanaProgress);
+});
+
+app.post('/api/campana-completa', async (req, res) => {
+    const {
+        idsSeleccionados,
+        plantilla,
+        tema,
+        tituloPrincipal,
+        textoTagline,
+        plantillaVideo,
+    } = req.body;
+
+    try {
+        const productos = await obtenerProductosApi();
+        const validacion = marketing.validarSeleccion({
+            idsSeleccionados,
+            productos,
+            plantillaVolante: plantilla,
+            plantillaVideo: plantillaVideo || 'PromoReel',
+            modo: 'campana',
+        });
+        if (!validacion.valido) {
+            return res.status(400).json({ error: validacion.errores.join(' '), validacion });
+        }
+
+        const campId = `camp_${Date.now()}`;
+        const campDir = path.join(marketing.campanasDir, campId);
+        fs.mkdirSync(campDir, { recursive: true });
+
+        const titulo = tituloPrincipal || 'Finde de Ahorro';
+        const configVolante = { idsSeleccionados, plantilla, tema, tituloPrincipal: titulo, textoTagline, orientacion: 'feed' };
+
+        campanaProgress = { fase: 'volante_feed', porcentaje: 10, mensaje: 'Generando volante feed...' };
+        const feedBuffer = await generarVolanteBuffer({ ...configVolante, orientacion: 'feed' });
+        fs.writeFileSync(path.join(campDir, 'feed.png'), feedBuffer);
+
+        campanaProgress = { fase: 'volante_historia', porcentaje: 30, mensaje: 'Generando volante historia...' };
+        const historiaBuffer = await generarVolanteBuffer({ ...configVolante, orientacion: 'historia' });
+        fs.writeFileSync(path.join(campDir, 'historia.png'), historiaBuffer);
+
+        campanaProgress = { fase: 'reel', porcentaje: 45, mensaje: 'Renderizando reel (puede tardar varios minutos)...' };
+        const resultadoVideo = await generarVideoInterno({
+            idsSeleccionados,
+            plantillaVideo: plantillaVideo || 'PromoReel',
+        });
+
+        const videoDestino = path.join(campDir, 'reel.mp4');
+        fs.copyFileSync(path.join(publicDir, resultadoVideo.nombreArchivo), videoDestino);
+
+        const seleccionados = productos.filter((p) =>
+            idsSeleccionados.includes(p.id_producto.toString().trim())
+        );
+        const copy = marketing.construirCopyTexto(seleccionados, titulo, tema || 'clasico');
+        fs.writeFileSync(path.join(campDir, 'copy.txt'), copy, 'utf8');
+
+        campanaProgress = { fase: 'done', porcentaje: 100, mensaje: '¡Campaña lista!' };
+
+        const entrada = marketing.agregarHistorial({
+            tipo: 'campana',
+            titulo,
+            tema: tema || 'clasico',
+            plantilla: plantilla || '4',
+            plantillaVideo: plantillaVideo || 'PromoReel',
+            textoTagline: textoTagline || 'Solo por tiempo limitado',
+            idsSeleccionados,
+            nombresProductos: seleccionados.map((p) => p.nombre),
+            volanteFeed: `/campanas/${campId}/feed.png`,
+            volanteHistoria: `/campanas/${campId}/historia.png`,
+            reel: `/campanas/${campId}/reel.mp4`,
+            copy,
+            campId,
+        });
+
+        res.json({
+            ok: true,
+            campId,
+            historialId: entrada.id,
+            volanteFeed: `/campanas/${campId}/feed.png`,
+            volanteHistoria: `/campanas/${campId}/historia.png`,
+            reel: `/campanas/${campId}/reel.mp4`,
+            copy,
+            validacion,
+        });
+    } catch (error) {
+        console.error('❌ Error campaña completa:', error);
+        campanaProgress = { fase: 'error', porcentaje: 0, mensaje: error.message };
+        res.status(500).json({ error: error.message || 'Error generando la campaña' });
+    } finally {
+        setTimeout(() => {
+            campanaProgress = { fase: 'idle', porcentaje: 0, mensaje: 'Listo' };
+        }, 3000);
     }
 });
 
@@ -507,6 +730,48 @@ const storage = multer.diskStorage({
     }
 });
 const upload = multer({ storage: storage });
+
+const bibliotecaDir = path.join(publicDir, 'biblioteca');
+if (!fs.existsSync(bibliotecaDir)) {
+    fs.mkdirSync(bibliotecaDir, { recursive: true });
+}
+
+const storageBiblioteca = multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, bibliotecaDir),
+    filename: (_req, file, cb) => {
+        const base = path.basename(file.originalname).replace(/[^a-zA-Z0-9._-]/g, '_');
+        cb(null, `${Date.now()}_${base}`);
+    },
+});
+const uploadBiblioteca = multer({
+    storage: storageBiblioteca,
+    limits: { fileSize: 10 * 1024 * 1024 },
+});
+
+app.get('/api/calendario', (req, res) => {
+    res.json(marketing.obtenerEventosCalendario());
+});
+
+app.get('/api/biblioteca', (req, res) => {
+    try {
+        const archivos = fs.readdirSync(bibliotecaDir)
+            .filter((f) => /\.(png|jpe?g|webp|gif)$/i.test(f))
+            .map((f) => ({ nombre: f, url: `/biblioteca/${f}` }));
+        res.json(archivos);
+    } catch (e) {
+        res.json([]);
+    }
+});
+
+app.post('/api/biblioteca/upload', uploadBiblioteca.array('archivos', 10), (req, res) => {
+    if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ error: 'No se recibieron archivos' });
+    }
+    res.json({
+        ok: true,
+        archivos: req.files.map((f) => ({ nombre: f.filename, url: `/biblioteca/${f.filename}` })),
+    });
+});
 
 // --- RUTA PARA GENERAR EL REEL DEL CLIENTE ---
 app.post('/generar-reel-cliente', upload.single('clientFoto'), async (req, res) => {
@@ -582,6 +847,36 @@ app.get('/api/local-estancados', async (req, res) => {
         console.error('Error en el puente de estancados:', error);
         // Enviar un array vacío en caso de error para que el frontend no colapse
         res.json([]); 
+    }
+});
+
+app.get('/api/lote/progreso', (req, res) => {
+    res.json(colaLote.obtenerProgreso());
+});
+
+app.post('/api/lote/preview', async (req, res) => {
+    try {
+        const { tipo, ...body } = req.body;
+        const tareas = await colaLote.construirTareas(tipo, body);
+        res.json({
+            total: tareas.length,
+            tareas: tareas.map((t) => ({ tipo: t.tipo, etiqueta: t.etiqueta })),
+        });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+app.post('/api/lote/iniciar', async (req, res) => {
+    try {
+        const { tipo, ...body } = req.body;
+        if (!tipo) {
+            return res.status(400).json({ error: 'Falta el tipo de lote' });
+        }
+        const resultado = await colaLote.iniciar(tipo, body);
+        res.json({ ok: true, ...resultado });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
     }
 });
 

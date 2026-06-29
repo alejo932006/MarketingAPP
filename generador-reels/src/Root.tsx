@@ -1,4 +1,5 @@
-import { Composition } from 'remotion';
+import { CalculateMetadataFunction, Composition } from 'remotion';
+import { z } from 'zod';
 import { PromoReel, promoSchema } from './Composition';
 import { ReelElegante } from './Composition2';
 import { TutorialReel } from './Tutorial';
@@ -11,6 +12,20 @@ import { ReelTemporada } from './ReelTemporada';
 import { ReelCinematico } from './ReelCinematico';
 import { ReelCarnaval } from './ReelCarnaval';
 import { ElectoralReel, electoralReelSchema } from './ElectoralReel';
+
+type PromoProps = z.infer<typeof promoSchema>;
+
+const duracionPromoReel: CalculateMetadataFunction<PromoProps> = ({ props }) => ({
+	durationInFrames: (props.productos.length * 180) + 150,
+});
+
+const duracionReelBrutalismo: CalculateMetadataFunction<PromoProps> = ({ props }) => ({
+	durationInFrames: (props.productos.length * 90) + 90,
+});
+
+const duracionReelCarnaval: CalculateMetadataFunction<PromoProps> = ({ props }) => ({
+	durationInFrames: 120 + (props.productos.length * 150) + 180,
+});
 
 export const RemotionRoot: React.FC = () => {
 	
@@ -62,7 +77,8 @@ export const RemotionRoot: React.FC = () => {
 				width={1080}
 				height={1920}
 				schema={promoSchema}
-				defaultProps={datosSimulados} 
+				defaultProps={datosSimulados}
+				calculateMetadata={duracionPromoReel}
 			/>
 
             {/* PLANTILLA 2: La Nueva Elegante */}
@@ -74,7 +90,8 @@ export const RemotionRoot: React.FC = () => {
 				width={1080}
 				height={1920}
 				schema={promoSchema}
-				defaultProps={datosSimulados} 
+				defaultProps={datosSimulados}
+				calculateMetadata={duracionPromoReel}
 			/>
 
 			{/* PLANTILLA 3: El Reel Brutalista (Impacto) */}
@@ -86,7 +103,8 @@ export const RemotionRoot: React.FC = () => {
 				width={1080}
 				height={1920}
 				schema={promoSchema}
-				defaultProps={datosSimulados} 
+				defaultProps={datosSimulados}
+				calculateMetadata={duracionReelBrutalismo}
 			/>
 
 			{/* PLANTILLA 4: Lanzamiento / Estreno (Cyberpunk) */}
@@ -98,7 +116,8 @@ export const RemotionRoot: React.FC = () => {
 				width={1080}
 				height={1920}
 				schema={promoSchema}
-				defaultProps={datosSimulados} 
+				defaultProps={datosSimulados}
+				calculateMetadata={duracionPromoReel}
 			/>
 
 			<Composition
@@ -196,6 +215,7 @@ export const RemotionRoot: React.FC = () => {
 						{ productName: "Manzana Roja", imageUrl: "https://api.surtitodoideal.com/static/icon.png", precio: "1.900", precioAntes: "2.500", porcentaje: 24 }
 					]
 				}}
+				calculateMetadata={duracionReelCarnaval}
 			/>
 
 			<Composition

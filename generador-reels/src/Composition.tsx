@@ -49,7 +49,7 @@ const BackgroundShapes = () => {
 // -----------------------------------------------------------------
 const ProductoIndividual: React.FC<z.infer<typeof productoSchema>> = ({ productName, imageUrl, precio, precioAntes, porcentaje }) => {
 	const frame = useCurrentFrame();
-	const { fps, width, durationInFrames } = useVideoConfig();
+	const { fps, width } = useVideoConfig();
 
 	// 1. Animación Base: Entrada de la Tarjeta Blanca
 	const animacionTarjeta = spring({ frame, fps, config: { mass: 0.8, damping: 12, stiffness: 100 } });
@@ -73,7 +73,8 @@ const ProductoIndividual: React.FC<z.infer<typeof productoSchema>> = ({ productN
 	const escalaEmoji = interpolate(animacionEmojis, [0, 1], [0, 1]);
 
 	// Barra de Progreso Matemática
-	const anchoProgreso = interpolate(frame, [0, durationInFrames], [0, 100]);
+	const DURACION_ESCENA = 180;
+	const anchoProgreso = interpolate(frame, [0, DURACION_ESCENA], [0, 100], { extrapolateRight: 'clamp' });
 
 	return (
 		<div style={{
