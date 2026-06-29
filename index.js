@@ -8,6 +8,7 @@ const { bundle } = require('@remotion/bundler');
 const { selectComposition, renderMedia } = require('@remotion/renderer');
 const multer = require('multer');
 const tier4 = require('./lib/tier4');
+const limpieza = require('./lib/limpieza');
 
 tier4.cargarEnv(__dirname);
 
@@ -169,6 +170,19 @@ async function getRemotionBundle() {
     return bundleInFlight;
 }
 
+function sincronizarVozEnBundle(voiceoverUrl, bundleLocation) {
+    if (!voiceoverUrl || voiceoverUrl.startsWith('http')) return;
+
+    const src = path.join(REMOTION_PUBLIC, voiceoverUrl);
+    if (!fs.existsSync(src)) {
+        throw new Error(`Archivo de voz no encontrado: ${src}`);
+    }
+
+    const dest = path.join(bundleLocation, 'public', voiceoverUrl);
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    fs.copyFileSync(src, dest);
+}
+
 async function renderizarReel({ compositionId, inputProps, outputLocation, frameRange }) {
     if (renderEnCurso) {
         throw new Error('Ya hay un video renderizándose. Espera a que termine.');
@@ -179,6 +193,10 @@ async function renderizarReel({ compositionId, inputProps, outputLocation, frame
 
     try {
         const bundleLocation = await getRemotionBundle();
+
+        if (inputProps.voiceoverUrl) {
+            sincronizarVozEnBundle(inputProps.voiceoverUrl, bundleLocation);
+        }
 
         renderProgress = {
             fase: 'composicion',
@@ -270,7 +288,84 @@ app.get('/api/tier4/status', (req, res) => {
         proveedorIA: 'Gemini (capa gratuita Google AI Studio)',
         proveedorVoz: 'Edge TTS (sin costo, sin API key)',
         qr: 'Gratis (generación local)',
+        voces: tier4.VOCES_DISPONIBLES,
+        vozPorDefecto: tier4.obtenerVozEdge(),
+        palabrasPorSegundo: tier4.PALABRAS_POR_SEGUNDO,
     });
+});
+
+app.get('/api/tier4/estimacion-guion', (req, res) => {
+    const plantilla = req.query.plantilla || 'PromoReel';
+    const numProductos = Math.max(1, parseInt(req.query.productos, 10) || 1);
+    const textoGuion = req.query.guion || '';
+    res.json(tier4.estimarGuionParaVideo(plantilla, numProductos, textoGuion));
+});
+
+app.post('/api/tier4/guion-voz', async (req, res) => {
+    try {
+        const { idsSeleccionados, titulo, plantillaVideo } = req.body;
+        if (!idsSeleccionados?.length) {
+            return res.status(400).json({ error: 'Selecciona al menos un producto' });
+        }
+
+        const response = await fetch('https://api.surtitodoideal.com/api/products');
+        const todos = await response.json();
+        const lista = Array.isArray(todos) ? todos : todos.data;
+        const productosRaw = lista.filter((p) =>
+            idsSeleccionados.includes(String(p.id_producto).trim())
+        );
+
+        const procesados = tier4.procesarProductosParaTexto(productosRaw);
+        const guion = tier4.construirGuionVoz(procesados, titulo || 'Ofertas imperdibles');
+        const plantilla = plantillaVideo || 'PromoReel';
+        const estimacion = tier4.estimarGuionParaVideo(plantilla, procesados.length, guion);
+
+        res.json({
+            guion,
+            productos: procesados.map((p) => ({ nombre: p.nombre, precio: p.precioFmt })),
+            ...estimacion,
+        });
+    } catch (error) {
+        console.error('❌ Error generando guion:', error);
+        res.status(500).json({ error: error.message || 'Error generando guion de voz' });
+    }
+});
+
+app.get('/api/limpieza/resumen', (req, res) => {
+    try {
+        const resumen = limpieza.escanearArchivosGenerados(__dirname);
+        res.json({
+            ...resumen,
+            renderEnCurso,
+            puedeLimpiar: !renderEnCurso,
+        });
+    } catch (error) {
+        console.error('❌ Error escaneando archivos:', error);
+        res.status(500).json({ error: 'No se pudo leer el espacio usado' });
+    }
+});
+
+app.post('/api/limpieza/ejecutar', (req, res) => {
+    if (renderEnCurso) {
+        return res.status(409).json({
+            error: 'Hay un reel renderizándose. Espera a que termine antes de limpiar.',
+        });
+    }
+
+    try {
+        const resultado = limpieza.eliminarArchivosGenerados(__dirname);
+        console.log(`🧹 Limpieza: ${resultado.eliminados} archivos, ${resultado.bytesLiberadosFmt} liberados`);
+        res.json({
+            ok: true,
+            eliminados: resultado.eliminados,
+            bytesLiberados: resultado.bytesLiberados,
+            bytesLiberadosFmt: resultado.bytesLiberadosFmt,
+            errores: resultado.errores,
+        });
+    } catch (error) {
+        console.error('❌ Error en limpieza:', error);
+        res.status(500).json({ error: error.message || 'Error al eliminar archivos' });
+    }
 });
 
 app.post('/api/ia/copy', async (req, res) => {
@@ -426,6 +521,7 @@ app.post('/generar-video', async (req, res) => {
         usarVoz,
         guionVozManual,
         tituloReel,
+        vozId,
     } = req.body;
 
     if (!idsSeleccionados || idsSeleccionados.length === 0) {
@@ -512,6 +608,9 @@ app.post('/generar-video', async (req, res) => {
         }
 
         let voiceoverUrl = null;
+        let durationOverrideFrames = null;
+        const fpsPlantilla = tier4.FPS_POR_PLANTILLA[plantillaVideo] || 60;
+
         if (usarVoz) {
             const productosRaw = listaInventario.filter((p) =>
                 idsSeleccionados.includes(p.id_producto.toString().trim())
@@ -521,13 +620,14 @@ app.post('/generar-video', async (req, res) => {
                 const procesados = tier4.procesarProductosParaTexto(productosRaw);
                 guion = tier4.construirGuionVoz(procesados, tituloReel || 'Ofertas imperdibles');
             }
-            const voz = await tier4.generarVozGratis(guion, REMOTION_PUBLIC);
+            const voz = await tier4.generarVozGratis(guion, REMOTION_PUBLIC, vozId);
             voiceoverUrl = `voiceovers/${voz.nombreArchivo}`;
-            const framesVoz = Math.ceil(voz.duracionSeg * 60) + 60;
+            const framesVoz = Math.ceil(voz.duracionSeg * fpsPlantilla) + fpsPlantilla;
             if (framesVoz > framesTotales) {
+                durationOverrideFrames = framesVoz;
                 framesTotales = framesVoz;
             }
-            console.log(`🎙️ Voz generada (${voz.duracionSeg.toFixed(1)}s) — ${voz.proveedor}`);
+            console.log(`🎙️ Voz generada (${voz.duracionSeg.toFixed(1)}s @ ${fpsPlantilla}fps, ${voz.voz}) — ${voz.proveedor}`);
         }
 
         const videoProps = { 
@@ -535,6 +635,7 @@ app.post('/generar-video', async (req, res) => {
             companyUrl: "surtitodoideal.com",
             ...(voiceoverUrl && { voiceoverUrl }),
             ...(tituloReel && { reelTitle: tituloReel }),
+            ...(durationOverrideFrames && { durationOverrideFrames }),
         };
 
         const idComposicion = plantillaVideo || 'PromoReel';
@@ -545,7 +646,6 @@ app.post('/generar-video', async (req, res) => {
             compositionId: idComposicion,
             inputProps: videoProps,
             outputLocation,
-            frameRange: [0, framesTotales - 1],
         });
 
         const tamano = verificarVideoGenerado(outputLocation);

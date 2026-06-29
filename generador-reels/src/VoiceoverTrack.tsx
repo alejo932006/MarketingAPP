@@ -10,5 +10,6 @@ export const VoiceoverTrack: React.FC<VoiceoverTrackProps> = ({
 	volume = 1,
 }) => {
 	if (!voiceoverUrl) return null;
-	return <Audio src={staticFile(voiceoverUrl)} volume={volume} />;
+	const src = voiceoverUrl.startsWith('http') ? voiceoverUrl : staticFile(voiceoverUrl);
+	return <Audio src={src} volume={volume} />;
 };

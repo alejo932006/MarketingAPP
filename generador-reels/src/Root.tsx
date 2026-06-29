@@ -15,16 +15,31 @@ import { ElectoralReel, electoralReelSchema } from './ElectoralReel';
 
 type PromoProps = z.infer<typeof promoSchema>;
 
+function duracionConVoz(base: number, props: PromoProps): number {
+	if (props.durationOverrideFrames && props.durationOverrideFrames > base) {
+		return props.durationOverrideFrames;
+	}
+	return base;
+}
+
 const duracionPromoReel: CalculateMetadataFunction<PromoProps> = ({ props }) => ({
-	durationInFrames: (props.productos.length * 180) + 150,
+	durationInFrames: duracionConVoz((props.productos.length * 180) + 150, props),
 });
 
 const duracionReelBrutalismo: CalculateMetadataFunction<PromoProps> = ({ props }) => ({
-	durationInFrames: (props.productos.length * 90) + 90,
+	durationInFrames: duracionConVoz((props.productos.length * 90) + 90, props),
 });
 
 const duracionReelCarnaval: CalculateMetadataFunction<PromoProps> = ({ props }) => ({
-	durationInFrames: 120 + (props.productos.length * 150) + 180,
+	durationInFrames: duracionConVoz(120 + (props.productos.length * 150) + 180, props),
+});
+
+const duracionReelAra: CalculateMetadataFunction<PromoProps> = ({ props }) => ({
+	durationInFrames: duracionConVoz(180, props),
+});
+
+const duracionReelTemporada: CalculateMetadataFunction<PromoProps> = ({ props }) => ({
+	durationInFrames: duracionConVoz(900, props),
 });
 
 export const RemotionRoot: React.FC = () => {
@@ -153,12 +168,13 @@ export const RemotionRoot: React.FC = () => {
 			<Composition
 				id="ReelAraStyle"
 				component={ReelAra}
-				durationInFrames={180} // 5 segundos, súper rápido y directo
-				fps={30} // 30fps es suficiente y renderiza el doble de rápido!
+				durationInFrames={180} // 6 segundos a 30fps
+				fps={30}
 				width={1080}
 				height={1920}
 				schema={promoSchema}
-				defaultProps={datosSimulados} 
+				defaultProps={datosSimulados}
+				calculateMetadata={duracionReelAra}
 			/>
 
 			<Composition
@@ -174,12 +190,13 @@ export const RemotionRoot: React.FC = () => {
 			<Composition
 				id="ReelTemporada"
 				component={ReelTemporada}
-				durationInFrames={900} // 120 (intro) + (150 * 4 productos) + 180 (outro) = 900
+				durationInFrames={900}
 				fps={60}
 				width={1080}
 				height={1920}
 				schema={promoSchema}
-				defaultProps={datosSimulados} 
+				defaultProps={datosSimulados}
+				calculateMetadata={duracionReelTemporada}
 			/>
 
 			<Composition

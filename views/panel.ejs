@@ -621,7 +621,7 @@
             
             <div class="form-group">
                 <label>Título Principal:</label>
-                <select id="selector-titulo" onchange="verificarTituloManual()">
+                <select id="selector-titulo" onchange="verificarTituloManual(); onTituloCampanaCambio();">
                     <option value="Dias De Ahorro">Dias De Ahorro</option>
                     <option value="Gran Madrugón">Gran Madrugón</option>
                     <option value="Quincena de Ofertas">Quincena de Ofertas</option>
@@ -629,7 +629,7 @@
                     <option value="Cyber Surtitodo">Cyber Surtitodo</option>
                     <option value="PERSONALIZADO">✏️ Escribir mi propio título...</option>
                 </select>
-                <input type="text" id="input-titulo-manual" placeholder="Ej: Feliz Día Mamá" style="display: none; margin-top: 10px;">
+                <input type="text" id="input-titulo-manual" placeholder="Ej: Feliz Día Mamá" style="display: none; margin-top: 10px;" oninput="onTituloCampanaCambio()">
                 <div class="form-group">
                     <label>Etiqueta Promocional (Tagline):</label>
                     <select id="selector-tagline">
@@ -672,7 +672,52 @@
                     <input type="checkbox" id="chk-voz-reel" onchange="toggleGuionVoz()">
                     Narración automática en reel (Edge TTS, 100% gratis)
                 </label>
-                <textarea id="guion-voz-manual" placeholder="Guion opcional para la voz. Si lo dejas vacío, se genera automáticamente." style="display: none; margin-top: 10px; width: 100%; min-height: 70px; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 13px;"></textarea>
+
+                <div id="contenedor-voz-opciones" style="display: none; margin-top: 10px;">
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label style="font-size: 13px; font-weight: 600;">Tipo de voz:</label>
+                        <select id="selector-voz" style="width: 100%; margin-top: 6px; padding: 8px; border-radius: 6px; border: 1px solid #ccc; font-size: 13px;">
+                            <option value="es-CO-GonzaloNeural">Hombre · Colombiano (Gonzalo) — Profesional</option>
+                            <option value="es-CO-SalomeNeural">Mujer · Colombiana (Salome) — Cercana</option>
+                            <option value="es-MX-JorgeNeural">Hombre · Neutro latino (Jorge)</option>
+                            <option value="es-ES-AlvaroNeural">Hombre · Formal (Álvaro) — Corporativo</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 8px; flex-wrap: wrap;">
+                        <label style="font-size: 13px; font-weight: 600; margin: 0;">Guion de voz:</label>
+                        <button type="button" id="btn-regenerar-guion" class="btn-action btn-dark" style="padding: 6px 10px; font-size: 12px;" onclick="regenerarGuionDesdeProductos()">
+                            🔄 Regenerar desde productos
+                        </button>
+                    </div>
+                    <p style="font-size: 11px; color: #888; margin: 0 0 8px; line-height: 1.4;">
+                        Se crea solo con los productos seleccionados. Puedes editarlo libremente antes de generar el reel.
+                    </p>
+                    <textarea id="guion-voz-manual" placeholder="Selecciona productos para generar el guion automáticamente..." oninput="onGuionEditadoPorUsuario()" style="width: 100%; min-height: 80px; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 13px; resize: vertical;"></textarea>
+
+                    <div id="guion-contador" style="font-size: 12px; color: #666; margin-top: 8px; line-height: 1.5; padding: 10px; background: #f8f9fa; border-radius: 6px; border: 1px solid #eaeaea;">
+                        Selecciona productos y plantilla de video para ver la guía de palabras.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="config-card" id="card-limpieza">
+            <h2>🧹 Liberar espacio en la Mac</h2>
+            <p style="font-size: 12px; color: #666; margin: 0 0 12px; line-height: 1.4;">
+                Elimina reels, voces en off y fotos temporales generadas por la app.
+                <strong>No borra</strong> música, tutorial base ni assets necesarios para crear contenido.
+            </p>
+            <div id="limpieza-resumen" style="font-size: 13px; color: #444; margin-bottom: 12px; padding: 12px; background: #f8f9fa; border-radius: 8px; border: 1px solid #eaeaea; line-height: 1.6;">
+                Calculando espacio usado...
+            </div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button type="button" class="btn-action btn-dark" style="flex: 1; min-width: 140px; padding: 10px; font-size: 13px;" onclick="actualizarResumenLimpieza()">
+                    🔄 Actualizar
+                </button>
+                <button type="button" id="btn-limpiar-archivos" class="btn-action" style="flex: 1; min-width: 140px; padding: 10px; font-size: 13px; background: #c0392b; color: #fff;" onclick="ejecutarLimpieza()">
+                    🗑️ Liberar espacio
+                </button>
             </div>
         </div>
 
@@ -756,7 +801,7 @@
         </div>
 
         <div class="action-group">
-            <select id="selector-plantilla-video" style="border: none; background: transparent; padding: 8px; font-weight: 600; width: auto; min-width: 200px;">
+            <select id="selector-plantilla-video" onchange="actualizarContadorGuion(); generarGuionDesdeProductos();" style="border: none; background: transparent; padding: 8px; font-weight: 600; width: auto; min-width: 200px;">
                 <option value="PromoReel">💥 Video: Explosivo</option>
                 <option value="ReelElegante">✨ Video: Elegante</option>
                 <option value="ReelBrutalismo">🚧 Reel Brutalista (Impacto)</option>
@@ -838,6 +883,7 @@
         let limiteProductos = 4;
         let inventarioEstancados = [];
         let intervaloProgreso = null;
+        let guionEditadoPorUsuario = false;
 
         function mostrarCarga(mensaje) {
             document.getElementById('loading-text').innerText = mensaje || 'Renderizando video...';
@@ -1143,6 +1189,11 @@
                 cardElement.classList.remove('selected');
             }
             actualizarBotonFlotante();
+            if (document.getElementById('chk-voz-reel')?.checked) {
+                generarGuionDesdeProductos();
+            } else {
+                actualizarContadorGuion();
+            }
         }
 
         function actualizarBotonFlotante() {
@@ -1326,6 +1377,76 @@
             }
         }
 
+        function obtenerTituloCampana() {
+            let titulo = document.getElementById('selector-titulo').value;
+            if (titulo === 'PERSONALIZADO') {
+                titulo = document.getElementById('input-titulo-manual').value.trim() || 'Ofertas Surtitodo';
+            }
+            return titulo;
+        }
+
+        function onGuionEditadoPorUsuario() {
+            guionEditadoPorUsuario = true;
+            actualizarContadorGuion();
+        }
+
+        function onTituloCampanaCambio() {
+            if (document.getElementById('chk-voz-reel')?.checked && !guionEditadoPorUsuario) {
+                generarGuionDesdeProductos();
+            }
+        }
+
+        async function generarGuionDesdeProductos(forzar = false) {
+            const textarea = document.getElementById('guion-voz-manual');
+            if (!textarea) return;
+
+            if (!document.getElementById('chk-voz-reel')?.checked) return;
+
+            if (idsSeleccionados.length === 0) {
+                textarea.value = '';
+                textarea.placeholder = 'Selecciona productos para generar el guion automáticamente...';
+                actualizarContadorGuion();
+                return;
+            }
+
+            if (guionEditadoPorUsuario && !forzar) return;
+
+            textarea.placeholder = 'Generando guion desde productos seleccionados...';
+            textarea.disabled = true;
+
+            try {
+                const res = await fetch('/api/tier4/guion-voz', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        idsSeleccionados,
+                        titulo: obtenerTituloCampana(),
+                        plantillaVideo: document.getElementById('selector-plantilla-video')?.value || 'PromoReel',
+                    }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'No se pudo generar el guion');
+
+                textarea.value = data.guion;
+                textarea.placeholder = 'Puedes editar este texto antes de crear el reel.';
+                if (forzar) guionEditadoPorUsuario = false;
+                await actualizarContadorGuion();
+            } catch (error) {
+                textarea.placeholder = 'Error al generar guion. Escribe tu texto manualmente.';
+            } finally {
+                textarea.disabled = false;
+            }
+        }
+
+        function regenerarGuionDesdeProductos() {
+            if (idsSeleccionados.length === 0) {
+                alert('Selecciona al menos un producto para generar el guion.');
+                return;
+            }
+            guionEditadoPorUsuario = false;
+            generarGuionDesdeProductos(true);
+        }
+
         function verificarTituloManual() {
             const selector = document.getElementById('selector-titulo');
             const inputManual = document.getElementById('input-titulo-manual');
@@ -1346,6 +1467,7 @@
             const plantillaVideo = document.getElementById('selector-plantilla-video').value;
             const usarVoz = document.getElementById('chk-voz-reel').checked;
             const guionVozManual = document.getElementById('guion-voz-manual').value;
+            const vozId = document.getElementById('selector-voz').value;
             let tituloReel = document.getElementById('selector-titulo').value;
             if (tituloReel === 'PERSONALIZADO') {
                 tituloReel = document.getElementById('input-titulo-manual').value || '';
@@ -1364,6 +1486,7 @@
                         usarVoz,
                         guionVozManual,
                         tituloReel: tituloReel || undefined,
+                        vozId,
                     })
                 });
                 if (res.ok) {
@@ -1392,8 +1515,43 @@
 
         function toggleGuionVoz() {
             const chk = document.getElementById('chk-voz-reel');
-            const ta = document.getElementById('guion-voz-manual');
-            ta.style.display = chk.checked ? 'block' : 'none';
+            const contenedor = document.getElementById('contenedor-voz-opciones');
+            contenedor.style.display = chk.checked ? 'block' : 'none';
+            if (chk.checked) {
+                generarGuionDesdeProductos(true);
+            } else {
+                guionEditadoPorUsuario = false;
+            }
+        }
+
+        async function actualizarContadorGuion() {
+            const contador = document.getElementById('guion-contador');
+            if (!contador) return;
+
+            const plantilla = document.getElementById('selector-plantilla-video')?.value || 'PromoReel';
+            const numProductos = Math.max(1, idsSeleccionados.length);
+            const guion = document.getElementById('guion-voz-manual')?.value || '';
+
+            try {
+                const params = new URLSearchParams({
+                    plantilla,
+                    productos: String(numProductos),
+                    guion,
+                });
+                const res = await fetch(`/api/tier4/estimacion-guion?${params}`);
+                const data = await res.json();
+
+                const color = data.excedeVideo ? '#b45309' : '#059669';
+                const icono = data.excedeVideo ? '⚠️' : '✅';
+
+                contador.innerHTML = `
+                    <strong style="color:${color}">${icono} ${data.palabrasActuales} palabras · ~${data.segundosEstimados}s de voz</strong><br>
+                    Video <em>${plantilla}</em> (${numProductos} producto${numProductos > 1 ? 's' : ''}): ~<strong>${data.duracionVideoSeg}s</strong> · Máx recomendado: <strong>${data.palabrasRecomendadas} palabras</strong><br>
+                    <span style="color:${data.excedeVideo ? '#b45309' : '#666'}">${data.nota}</span>
+                `;
+            } catch (e) {
+                contador.textContent = 'No se pudo calcular la estimación del guion.';
+            }
         }
 
         async function cargarEstadoTier4() {
@@ -1407,12 +1565,103 @@
                 if (!data.iaConfigurada) {
                     document.getElementById('chk-usar-ia').checked = false;
                 }
+                if (data.vozPorDefecto && document.getElementById('selector-voz')) {
+                    document.getElementById('selector-voz').value = data.vozPorDefecto;
+                }
             } catch (e) {
                 el.textContent = 'Modo gratuito: QR y voz sin costo. Copy local si no hay API key.';
             }
         }
 
         cargarEstadoTier4();
+        actualizarResumenLimpieza();
+
+        async function actualizarResumenLimpieza() {
+            const el = document.getElementById('limpieza-resumen');
+            const btn = document.getElementById('btn-limpiar-archivos');
+            if (!el) return;
+
+            el.textContent = 'Calculando espacio usado...';
+            if (btn) btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/limpieza/resumen');
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Error al leer archivos');
+
+                if (data.totalArchivos === 0) {
+                    el.innerHTML = '✅ No hay archivos generados acumulados. La Mac está limpia.';
+                } else {
+                    const lineas = data.categorias
+                        .filter((c) => c.cantidad > 0)
+                        .map((c) => `• <strong>${c.nombre}</strong>: ${c.cantidad} archivo${c.cantidad > 1 ? 's' : ''} (${c.tamano})`)
+                        .join('<br>');
+                    el.innerHTML = `
+                        <strong>Total: ${data.totalTamano}</strong> en ${data.totalArchivos} archivo${data.totalArchivos > 1 ? 's' : ''}<br><br>
+                        ${lineas}
+                        ${data.renderEnCurso ? '<br><br>⚠️ Hay un render en curso. Espera a que termine para limpiar.' : ''}
+                    `;
+                }
+
+                if (btn) {
+                    btn.disabled = data.renderEnCurso || data.totalArchivos === 0;
+                    btn.style.opacity = btn.disabled ? '0.5' : '1';
+                }
+            } catch (error) {
+                el.textContent = 'No se pudo calcular el espacio usado.';
+            }
+        }
+
+        async function ejecutarLimpieza() {
+            const resPreview = await fetch('/api/limpieza/resumen');
+            const preview = await resPreview.json();
+            if (!resPreview.ok) {
+                alert(preview.error || 'No se pudo verificar los archivos.');
+                return;
+            }
+            if (preview.totalArchivos === 0) {
+                alert('No hay archivos generados para eliminar.');
+                return;
+            }
+            if (preview.renderEnCurso) {
+                alert('Hay un reel renderizándose. Espera a que termine.');
+                return;
+            }
+
+            const detalle = preview.categorias
+                .filter((c) => c.cantidad > 0)
+                .map((c) => `${c.nombre}: ${c.cantidad} (${c.tamano})`)
+                .join('\n');
+
+            const confirmar = confirm(
+                `¿Eliminar ${preview.totalArchivos} archivo(s) y liberar ${preview.totalTamano}?\n\n${detalle}\n\nLos volantes no se guardan en la Mac (solo en tu iPad). Esta acción no se puede deshacer.`
+            );
+            if (!confirmar) return;
+
+            const btn = document.getElementById('btn-limpiar-archivos');
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = '⏳ Eliminando...';
+            }
+
+            try {
+                const res = await fetch('/api/limpieza/ejecutar', { method: 'POST' });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Error al limpiar');
+
+                alert(`✅ Listo. Se eliminaron ${data.eliminados} archivo(s) y se liberaron ${data.bytesLiberadosFmt}.`);
+                urlVideoActual = null;
+                blobVideoActual = null;
+                await actualizarResumenLimpieza();
+            } catch (error) {
+                alert(error.message || 'Error al eliminar archivos.');
+            } finally {
+                if (btn) {
+                    btn.textContent = '🗑️ Liberar espacio';
+                    btn.disabled = false;
+                }
+            }
+        }
 
         function toggleTheme() {
             document.body.classList.toggle('dark-theme');

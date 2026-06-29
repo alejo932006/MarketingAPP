@@ -1,6 +1,7 @@
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig, Img, Audio, staticFile, Sequence } from 'remotion';
 import { z } from 'zod';
 import { promoSchema } from './Composition';
+import { VoiceoverTrack } from './VoiceoverTrack';
 
 // -----------------------------------------------------------------
 // 🔵 FONDO DE IMPACTO (Azul Rey, Celeste y Amarillo)
@@ -193,14 +194,14 @@ const ProductoEscena: React.FC<{ producto: any, companyUrl: string }> = ({ produ
 // -----------------------------------------------------------------
 // 🎬 COMPONENTE DIRECTOR
 // -----------------------------------------------------------------
-export const ReelAra: React.FC<z.infer<typeof promoSchema>> = ({ companyUrl, productos }) => {
+export const ReelAra: React.FC<z.infer<typeof promoSchema>> = ({ companyUrl, productos, voiceoverUrl }) => {
 	const producto = productos[0]; 
 	if (!producto) return <AbsoluteFill style={{backgroundColor: 'red'}}>FALTA PRODUCTO</AbsoluteFill>;
 
 	return (
 		<AbsoluteFill style={{ fontFamily: 'sans-serif' }}>
-			{/* 👇 AQUÍ LLAMAMOS A LA NUEVA PISTA DE IMPACTO 👇 */}
-			<Audio src={staticFile('impacto-bg.mp3')} volume={0.6} />
+			<Audio src={staticFile('impacto-bg.mp3')} volume={voiceoverUrl ? 0.25 : 0.6} />
+			<VoiceoverTrack voiceoverUrl={voiceoverUrl} />
 			
 			<FondoImpacto />
 			

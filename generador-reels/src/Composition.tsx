@@ -15,6 +15,7 @@ export const promoSchema = z.object({
 	productos: z.array(productoSchema),
 	voiceoverUrl: z.string().optional(),
 	reelTitle: z.string().optional(),
+	durationOverrideFrames: z.number().optional(),
 });
 
 // -----------------------------------------------------------------
