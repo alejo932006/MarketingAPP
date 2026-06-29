@@ -1,0 +1,72 @@
+[
+  {
+    "id": "camp_1782766645220",
+    "fecha": "2026-06-29T20:57:25.220Z",
+    "tipo": "volante",
+    "titulo": "Dias De Ahorro",
+    "tema": "clasico",
+    "plantilla": "4",
+    "textoTagline": "Solo por tiempo limitado",
+    "orientacion": "feed",
+    "idsSeleccionados": [
+      "7702045520941",
+      "7702045520972",
+      "7702045523799",
+      "7702141509864"
+    ],
+    "nombresProductos": [
+      "ACEITE GOURMET FAMILIA X 1800ML",
+      "CREMA PEINAR KONZIL RIZOS 2X230ML",
+      "CREMA PEINAR KONZIL RIZOS X 230ML",
+      "CREMA PEINAR KONZIL SEDA LIQUIDO X 2 X 230 ML"
+    ],
+    "volante": "/campanas/vol_1782766645219/feed.png"
+  },
+  {
+    "id": "camp_1782766644832",
+    "fecha": "2026-06-29T20:57:24.832Z",
+    "tipo": "volante",
+    "titulo": "Precios de Locura",
+    "tema": "clasico",
+    "plantilla": "4",
+    "textoTagline": "Solo por tiempo limitado",
+    "orientacion": "feed",
+    "idsSeleccionados": [
+      "7702045520941",
+      "7702045520972",
+      "7702045523799",
+      "7702141509864"
+    ],
+    "nombresProductos": [
+      "ACEITE GOURMET FAMILIA X 1800ML",
+      "CREMA PEINAR KONZIL RIZOS 2X230ML",
+      "CREMA PEINAR KONZIL RIZOS X 230ML",
+      "CREMA PEINAR KONZIL SEDA LIQUIDO X 2 X 230 ML"
+    ],
+    "volante": "/campanas/vol_1782766644831/feed.png"
+  },
+  {
+    "id": "camp_1782766578232",
+    "fecha": "2026-06-29T20:56:18.232Z",
+    "tipo": "lote",
+    "subtipo": "formatos_volante",
+    "loteId": "lote_1782766565133",
+    "carpeta": "/campanas/lote_1782766565133",
+    "cantidad": 2,
+    "resultados": [
+      {
+        "tipo": "volante",
+        "etiqueta": "Volante Feed",
+        "url": "/campanas/lote_1782766565133/volante_1_Volante_Feed.png",
+        "nombreArchivo": "volante_1_Volante_Feed.png"
+      },
+      {
+        "tipo": "volante",
+        "etiqueta": "Volante Historia",
+        "url": "/campanas/lote_1782766565133/volante_2_Volante_Historia.png",
+        "nombreArchivo": "volante_2_Volante_Historia.png"
+      }
+    ],
+    "titulo": "Dias De Ahorro"
+  }
+]

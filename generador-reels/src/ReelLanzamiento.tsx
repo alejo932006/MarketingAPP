@@ -1,6 +1,7 @@
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig, Img, Series, Audio, staticFile, Sequence } from 'remotion';
 import { z } from 'zod';
 import { promoSchema, productoSchema } from './Composition'; // Reutilizamos tus schemas
+import { VoiceoverTrack } from './VoiceoverTrack';
 
 // -----------------------------------------------------------------
 // 🌌 FONDO TECH / NEÓN
@@ -140,7 +141,7 @@ const ProductoLanzamiento: React.FC<z.infer<typeof productoSchema>> = ({ product
 // -----------------------------------------------------------------
 // 🎬 COMPONENTE PRINCIPAL: REEL LANZAMIENTO
 // -----------------------------------------------------------------
-export const ReelLanzamiento: React.FC<z.infer<typeof promoSchema>> = ({ companyUrl, productos }) => {
+export const ReelLanzamiento: React.FC<z.infer<typeof promoSchema>> = ({ companyUrl, productos, voiceoverUrl, reelTitle }) => {
 	const frame = useCurrentFrame();
 	const { fps } = useVideoConfig();
 
@@ -152,7 +153,8 @@ export const ReelLanzamiento: React.FC<z.infer<typeof promoSchema>> = ({ company
 	return (
 		<AbsoluteFill style={{ backgroundColor: '#050505', fontFamily: 'sans-serif' }}>
 			{/* MÚSICA DE LANZAMIENTO */}
-			<Audio src={staticFile('background-music2.mp3')} volume={0.4} />
+			<Audio src={staticFile('background-music2.mp3')} volume={voiceoverUrl ? 0.15 : 0.4} />
+			<VoiceoverTrack voiceoverUrl={voiceoverUrl} />
 			
 			<BackgroundNeon />
 

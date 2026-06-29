@@ -28,7 +28,7 @@
             font-family: 'Poppins', sans-serif; 
             background: var(--bg-color); 
             margin: 0; 
-            padding: 20px 20px 200px 20px; 
+            padding: 20px 20px 120px 20px; 
             color: var(--text-main);
         }
 
@@ -218,125 +218,38 @@
             transform: scale(1.02); 
         }
 
-        /* Barra de Acción Inferior — Dock */
+        /* Barra de Acción Inferior Fija */
         .bottom-action-bar {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            background: rgba(255, 255, 255, 0.97);
-            backdrop-filter: blur(12px);
-            box-shadow: 0 -4px 24px rgba(0,0,0,0.1);
-            padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+            padding: 15px 30px;
             display: flex;
             justify-content: center;
+            align-items: center;
+            gap: 20px;
             z-index: 100;
             box-sizing: border-box;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             transform: translateY(100%);
-            border-top: 1px solid #eaeaea;
         }
 
         .bottom-action-bar.visible {
             transform: translateY(0);
         }
 
-        .dock-inner {
-            width: 100%;
-            max-width: 640px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .dock-contador {
-            font-size: 12px;
-            font-weight: 600;
-            color: #666;
-            text-align: center;
-            padding: 2px 0;
-        }
-
-        .dock-contador strong {
-            color: var(--primary);
-            font-size: 14px;
-        }
-
-        .dock-btn-campana {
-            width: 100%;
-            padding: 13px 16px !important;
-            font-size: 14px !important;
-            border-radius: 12px !important;
-            background: linear-gradient(135deg, #E60000, #ff4444) !important;
-            box-shadow: 0 4px 14px rgba(230,0,0,0.25);
-        }
-
-        .dock-seccion-reel {
-            background: #f4f6f8;
-            border: 1px solid #e8e8e8;
-            border-radius: 14px;
-            padding: 10px 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .dock-label {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            color: #888;
-            margin: 0;
-        }
-
-        .dock-select-reel {
-            width: 100%;
-            padding: 10px 12px;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-            background: white;
-            font-family: 'Poppins', sans-serif;
-            font-size: 13px;
-            font-weight: 600;
-            color: #333;
-            box-sizing: border-box;
-            cursor: pointer;
-        }
-
-        .dock-acciones-principales {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-
-        .dock-btn-reel {
-            width: 100%;
-            padding: 12px 10px !important;
-            font-size: 14px !important;
-            border-radius: 12px !important;
-        }
-
-        .dock-btn-volante {
-            width: 100%;
-            padding: 12px 10px !important;
-            font-size: 14px !important;
-            border-radius: 12px !important;
-        }
-
-        .dock-btn-ab {
-            grid-column: 1 / -1;
-            width: 100%;
-            padding: 10px !important;
-            font-size: 13px !important;
-            border-radius: 10px !important;
-            background: #f0f0f0 !important;
-            color: #333 !important;
-            box-shadow: none !important;
-        }
-
         .action-group {
-            display: none;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 50px;
+            border: 1px solid #eaeaea;
         }
 
         .btn-action {
@@ -377,8 +290,6 @@
             align-items: center; 
             z-index: 1000; 
             backdrop-filter: blur(5px);
-            padding: 10px;
-            box-sizing: border-box;
         }
 
         .modal-content { 
@@ -484,405 +395,6 @@
             word-break: break-all;
         }
 
-        .sugerencias-bar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
-            padding: 16px;
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            border: 1px solid #eaeaea;
-            align-items: center;
-        }
-
-        .sugerencias-bar span {
-            font-weight: 600;
-            font-size: 14px;
-            color: #555;
-            margin-right: 4px;
-        }
-
-        .btn-sugerencia {
-            background: #fff5f5;
-            border: 1px solid #fecaca;
-            color: var(--primary);
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: 'Poppins', sans-serif;
-            transition: all 0.2s;
-        }
-
-        .btn-sugerencia:hover { background: var(--primary); color: white; }
-
-        .validacion-panel {
-            display: none;
-            margin-bottom: 20px;
-            padding: 14px 16px;
-            border-radius: var(--border-radius);
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
-        .validacion-panel.visible { display: block; }
-        .validacion-panel.error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
-        .validacion-panel.warning { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
-        .validacion-panel.ok { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
-
-        .validacion-panel ul { margin: 6px 0 0 18px; padding: 0; }
-
-        .presets-lista {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            max-height: 160px;
-            overflow-y: auto;
-        }
-
-        .preset-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 10px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            font-size: 13px;
-            gap: 8px;
-        }
-
-        .preset-item button {
-            border: none;
-            background: var(--primary);
-            color: white;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .preset-item .btn-borrar {
-            background: #e0e0e0;
-            color: #333;
-        }
-
-        .historial-panel {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: var(--border-radius);
-            margin-bottom: 30px;
-            border: 1px solid #eaeaea;
-        }
-
-        .historial-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 13px;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .historial-item:last-child { border-bottom: none; }
-
-        .historial-item .meta { color: #888; font-size: 12px; }
-
-        .historial-item .acciones { display: flex; gap: 6px; flex-wrap: wrap; }
-
-        .historial-item button {
-            border: none;
-            background: #f0f0f0;
-            padding: 5px 10px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .historial-item button.btn-repetir { background: var(--primary); color: white; }
-
-        .btn-campana {
-            background: linear-gradient(135deg, #E60000, #ff4444) !important;
-        }
-
-        /* Tier 2 */
-        .modo-remate-banner {
-            display: none;
-            background: linear-gradient(135deg, #fff1f2, #ffe4e6);
-            border: 2px solid #fda4af;
-            border-radius: var(--border-radius);
-            padding: 16px 20px;
-            margin-bottom: 20px;
-        }
-
-        .modo-remate-banner.visible { display: block; }
-
-        .modo-remate-banner h3 {
-            margin: 0 0 8px;
-            color: #e11d48;
-            font-size: 16px;
-        }
-
-        .modo-remate-banner p {
-            margin: 0 0 12px;
-            font-size: 13px;
-            color: #666;
-            line-height: 1.4;
-        }
-
-        .calendario-panel {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: var(--border-radius);
-            margin-bottom: 20px;
-            border: 1px solid #eaeaea;
-        }
-
-        .calendario-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 13px;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .calendario-item:last-child { border-bottom: none; }
-
-        .calendario-item .fecha-badge {
-            background: #fff5f5;
-            color: var(--primary);
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .biblioteca-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .biblioteca-item {
-            aspect-ratio: 1;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid #eee;
-            background: #f8f8f8;
-        }
-
-        .biblioteca-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        body.dark-theme .dock-seccion-reel {
-            background: #252525;
-            border-color: #444;
-        }
-
-        body.dark-theme .dock-select-reel {
-            background: #2a2a2a;
-            color: #e0e0e0;
-            border-color: #555;
-        }
-
-        body.dark-theme .bottom-action-bar {
-            background: rgba(30, 30, 30, 0.97);
-            border-color: #444;
-        }
-
-        .lote-panel {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: var(--border-radius);
-            margin-bottom: 20px;
-            border: 1px solid #eaeaea;
-        }
-
-        .lote-preview {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 12px;
-            font-size: 12px;
-            color: #555;
-            margin: 10px 0;
-            line-height: 1.5;
-        }
-
-        .lote-resultados-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 12px;
-            margin: 16px 0;
-        }
-
-        .lote-resultado-item {
-            border: 1px solid #eee;
-            border-radius: 10px;
-            overflow: hidden;
-            background: #fafafa;
-            text-align: center;
-        }
-
-        .lote-resultado-item img,
-        .lote-resultado-item video {
-            width: 100%;
-            aspect-ratio: 1;
-            object-fit: cover;
-            background: #000;
-        }
-
-        .lote-resultado-item p {
-            margin: 0;
-            padding: 8px;
-            font-size: 11px;
-            font-weight: 600;
-            color: #444;
-        }
-
-        .lote-resultado-item button {
-            width: 100%;
-            border: none;
-            background: var(--primary);
-            color: white;
-            padding: 8px;
-            font-size: 11px;
-            cursor: pointer;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .campana-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin: 0 0 12px 0;
-        }
-
-        .campana-grid img {
-            width: 100%;
-            max-height: 22vh;
-            object-fit: contain;
-            border-radius: 8px;
-            border: 1px solid #eee;
-            background: #f8f8f8;
-        }
-
-        .modal-campana-content {
-            max-width: 700px;
-            width: 95%;
-            max-height: 92vh;
-            padding: 0;
-            overflow: hidden;
-            text-align: left;
-        }
-
-        .modal-campana-header {
-            flex-shrink: 0;
-            padding: 16px 20px 10px;
-            text-align: center;
-            border-bottom: 1px solid #eee;
-        }
-
-        .modal-campana-header h2 {
-            margin: 0;
-            font-size: 1.1rem;
-            color: var(--secondary);
-        }
-
-        .modal-campana-body {
-            flex: 1;
-            min-height: 0;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            padding: 14px 16px;
-        }
-
-        .modal-campana-footer {
-            flex-shrink: 0;
-            padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
-            border-top: 2px solid #eee;
-            background: #fafafa;
-            text-align: center;
-        }
-
-        .modal-campana-footer .footer-label {
-            margin: 0 0 8px 0;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #888;
-        }
-
-        .modal-campana-footer .footer-label:not(:first-child) {
-            margin-top: 10px;
-        }
-
-        .modal-campana-acciones {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: center;
-        }
-
-        .modal-campana-acciones .btn-action,
-        .modal-campana-acciones a.btn-action {
-            padding: 10px 14px;
-            font-size: 13px;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        #campana-reel-video {
-            max-height: 28vh;
-            width: 100%;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            background: #000;
-        }
-
-        #campana-copy {
-            width: 100%;
-            height: 90px;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-            resize: none;
-            font-size: 12px;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        body.dark-theme .modal-campana-footer {
-            background: #252525;
-            border-color: #444;
-        }
-
-        body.dark-theme .modal-campana-header {
-            border-color: #444;
-        }
-
-        .btn-whatsapp {
-            background: #25D366 !important;
-            color: white !important;
-        }
-
-        @media (max-width: 600px) {
-            .campana-grid { grid-template-columns: 1fr; }
-        }
-
         .ios-hint {
             display: none;
             background: #fff8e6;
@@ -973,19 +485,23 @@
         }
 
         @media (max-width: 900px) {
-            body { padding: 12px 12px 220px 12px; }
+            body { padding: 12px 12px 140px 12px; }
 
             .header { padding: 20px 16px; }
             .header h1 { font-size: 1.25rem; }
 
-            .config-layout { grid-template-columns: 1fr; }
+            .config-layout {
+                grid-template-columns: 1fr;
+            }
 
             .inventory-header {
                 flex-direction: column;
                 align-items: stretch;
             }
 
-            .tabs { flex-wrap: wrap; }
+            .tabs {
+                flex-wrap: wrap;
+            }
 
             .tabs button {
                 flex: 1;
@@ -1008,12 +524,30 @@
             .card img { width: 90px; height: 90px; }
 
             .bottom-action-bar {
-                padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px));
+                flex-direction: column;
+                padding: 12px 16px;
+                gap: 10px;
             }
 
-            .dock-acciones-principales {
-                grid-template-columns: 1fr;
+            .action-group {
+                flex-direction: column;
+                width: 100%;
+                border-radius: 12px;
+                padding: 12px;
             }
+
+            .action-group select {
+                width: 100% !important;
+                min-width: unset !important;
+            }
+
+            .btn-action {
+                width: 100%;
+                padding: 14px 20px;
+                font-size: 15px;
+            }
+
+            #btn-generar { width: 100%; }
 
             .modal-content {
                 padding: 20px;
@@ -1042,23 +576,6 @@
     <div id="network-banner" class="network-banner" style="display: none;">
         <strong>📱 Acceso desde iPad:</strong> Conecta tu iPad a la misma WiFi y abre Safari en<br>
         <code id="ipad-url">cargando...</code>
-    </div>
-
-    <div class="sugerencias-bar">
-        <span>⚡ Sugerencias:</span>
-        <button class="btn-sugerencia" onclick="aplicarSugerencia('topOfertas')">🔥 Top ofertas del día</button>
-        <button class="btn-sugerencia" onclick="aplicarSugerencia('mejorDescuento')">💰 Mejor descuento %</button>
-        <button class="btn-sugerencia" onclick="aplicarSugerencia('estancados')">⚠️ Estancados urgentes</button>
-    </div>
-
-    <div id="validacion-panel" class="validacion-panel"></div>
-
-    <div class="historial-panel">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h2 style="margin: 0; font-size: 16px; color: var(--secondary);">📂 Historial de campañas</h2>
-            <button onclick="cargarHistorial()" style="border: none; background: #f0f0f0; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">🔄 Actualizar</button>
-        </div>
-        <div id="historial-lista"><p style="color: #888; font-size: 13px; margin: 0;">Sin campañas guardadas aún.</p></div>
     </div>
 
     <div class="config-layout">
@@ -1125,46 +642,37 @@
                 </div>
             </div>
         </div>
-        <div class="config-card">
-            <h2>⭐ Presets / Favoritos</h2>
-            <div class="form-group">
-                <label>Guardar configuración actual:</label>
-                <div style="display: flex; gap: 8px;">
-                    <input type="text" id="input-preset-nombre" placeholder="Ej: Viernes carnes" style="flex: 1;">
-                    <button onclick="guardarPreset()" class="btn-action btn-dark" style="padding: 10px 16px; font-size: 13px; white-space: nowrap;">💾 Guardar</button>
-                </div>
-            </div>
-            <div id="presets-lista" class="presets-lista">
-                <p style="color: #888; font-size: 13px; margin: 0;">No hay presets guardados.</p>
-            </div>
-        </div>
 
-        <div class="config-card">
-            <h2>📁 Biblioteca de assets</h2>
-            <p style="font-size: 12px; color: #666; margin: 0 0 10px; line-height: 1.4;">Logos, banners y fotos reutilizables para campañas.</p>
-            <input type="file" id="input-biblioteca" accept="image/png,image/jpeg,image/jpg,image/webp" multiple
-                   style="width: 100%; font-size: 12px; margin-bottom: 10px;" onchange="subirABiblioteca(this)">
-            <div id="biblioteca-grid" class="biblioteca-grid"></div>
-        </div>
-
-        <div class="config-card">
-            <h2>📦 Generación en lote</h2>
-            <p style="font-size: 12px; color: #666; margin: 0 0 10px; line-height: 1.4;">
-                Cola automática: genera varios volantes o reels uno tras otro sin intervención manual.
+        <div class="config-card" id="card-tier4">
+            <h2>🚀 Extras (modo gratuito)</h2>
+            <p id="tier4-status" style="font-size: 12px; color: #666; margin: 0 0 12px; line-height: 1.4;">
+                Cargando estado...
             </p>
+
             <div class="form-group">
-                <label>Tipo de lote:</label>
-                <select id="selector-tipo-lote" class="dock-select-reel" style="width:100%;" onchange="previewLote()">
-                    <option value="volantes_por_linea">🛒 Volante por cada línea (top ofertas)</option>
-                    <option value="remate_por_linea">⚠️ Remate: volante por línea (estancados)</option>
-                    <option value="formatos_volante">🖼️ Feed + Historia (selección actual)</option>
-                    <option value="reels_multi">🎬 4 reels distintos (misma selección)</option>
+                <label>Código QR en volante:</label>
+                <select id="selector-qr" onchange="toggleQrPersonalizado()">
+                    <option value="ninguno">Sin QR</option>
+                    <option value="web">Web surtitodoideal.com</option>
+                    <option value="whatsapp">WhatsApp pedidos</option>
+                    <option value="personalizado">URL personalizada</option>
                 </select>
+                <input type="text" id="input-qr-url" placeholder="https://..." style="display: none; margin-top: 10px;">
             </div>
-            <div id="lote-preview" class="lote-preview">Selecciona un tipo y pulsa Vista previa.</div>
-            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <button type="button" onclick="previewLote()" class="btn-action btn-dark" style="flex:1; padding:10px; font-size:13px;">👁️ Vista previa</button>
-                <button type="button" id="btn-iniciar-lote" onclick="iniciarLote()" class="btn-action btn-primary" style="flex:2; padding:10px; font-size:13px;">▶️ Iniciar cola</button>
+
+            <div class="form-group" style="margin-top: 12px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="chk-usar-ia" checked>
+                    Mejorar copy con Gemini (capa gratuita, sin tarjeta)
+                </label>
+            </div>
+
+            <div class="form-group" style="margin-top: 8px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="chk-voz-reel" onchange="toggleGuionVoz()">
+                    Narración automática en reel (Edge TTS, 100% gratis)
+                </label>
+                <textarea id="guion-voz-manual" placeholder="Guion opcional para la voz. Si lo dejas vacío, se genera automáticamente." style="display: none; margin-top: 10px; width: 100%; min-height: 70px; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 13px;"></textarea>
             </div>
         </div>
 
@@ -1220,17 +728,6 @@
 
     </div>
     
-    <div id="modo-remate-banner" class="modo-remate-banner">
-        <h3>⚠️ Modo Remate / Liquidación</h3>
-        <p>Productos estancados seleccionados. Aplica el preset agresivo con plantilla de impacto, copy de urgencia y reel brutalista.</p>
-        <button onclick="aplicarPresetRemate()" class="btn-action btn-primary" style="padding: 10px 20px; font-size: 13px;">🔥 Activar preset remate</button>
-    </div>
-
-    <div id="calendario-panel" class="calendario-panel">
-        <h2 style="margin: 0 0 12px; font-size: 16px; color: var(--secondary);">📅 Calendario de campañas</h2>
-        <div id="calendario-lista"><p style="color: #888; font-size: 13px; margin: 0;">Cargando...</p></div>
-    </div>
-
     <div class="inventory-header">
         <div class="tabs">
             <button id="tab-ofertas" class="active" onclick="cambiarPestana('ofertas')">🔥 Ofertas Activas</button>
@@ -1253,78 +750,29 @@
     <button id="btn-cargar-mas" class="btn-cargar-mas" onclick="cargarMas()">⬇️ Cargar 50 productos más</button>
 
     <div id="action-container" class="bottom-action-bar">
-        <div class="dock-inner">
-            <div id="dock-contador" class="dock-contador"><strong>0</strong> productos seleccionados</div>
+        
+        <div id="cargando-video">
+            ⏳ Renderizando a 60fps...
+        </div>
 
-            <button id="btn-campana-completa" class="btn-action dock-btn-campana" onclick="generarCampanaCompleta()">
-                🚀 Campaña completa
+        <div class="action-group">
+            <select id="selector-plantilla-video" style="border: none; background: transparent; padding: 8px; font-weight: 600; width: auto; min-width: 200px;">
+                <option value="PromoReel">💥 Video: Explosivo</option>
+                <option value="ReelElegante">✨ Video: Elegante</option>
+                <option value="ReelBrutalismo">🚧 Reel Brutalista (Impacto)</option>
+                <option value="ReelLanzamiento">🚀 Reel: Nuevo Lanzamiento (Cyber)</option>
+                <option value="ReelAraStyle">🛒 Reel Impacto (1 Producto Máximo)</option>
+                <option value="ReelTemporada">🌟 Reel: Especial de Temporada</option>
+                <option value="ReelCinematico">🎥 Reel Cinemático (Oferta 3D)</option>
+                <option value="ReelCarnaval">🍉 Reel: Carnaval Frutas y Verduras</option> </select>
+            <button id="btn-generar-video" class="btn-action btn-dark" onclick="generarVideoRemotion()">
+                🎬 Crear Reel
             </button>
-
-            <div class="dock-seccion-reel">
-                <p class="dock-label">Plantilla de reel</p>
-                <select id="selector-plantilla-video" class="dock-select-reel">
-                    <option value="PromoReel">💥 Explosivo</option>
-                    <option value="ReelElegante">✨ Elegante</option>
-                    <option value="ReelBrutalismo">🚧 Brutalista (Impacto)</option>
-                    <option value="ReelLanzamiento">🚀 Nuevo Lanzamiento</option>
-                    <option value="ReelAraStyle">🛒 Impacto (1 producto)</option>
-                    <option value="ReelTemporada">🌟 Especial Temporada</option>
-                    <option value="ReelCinematico">🎥 Cinemático 3D</option>
-                    <option value="ReelCarnaval">🍉 Carnaval Frutas</option>
-                </select>
-            </div>
-
-            <div class="dock-acciones-principales">
-                <button id="btn-generar-video" class="btn-action btn-dark dock-btn-reel" onclick="generarVideoRemotion()">
-                    🎬 Crear Reel
-                </button>
-                <button id="btn-generar" class="btn-action btn-primary dock-btn-volante" onclick="generarVolante()">
-                    🖼️ Volante
-                </button>
-                <button class="btn-action dock-btn-ab" onclick="generarVariantesAB()">
-                    🔀 Variantes A/B (2 volantes)
-                </button>
-            </div>
         </div>
-    </div>
 
-    <div id="modal-lote" class="modal">
-        <div class="modal-content modal-campana-content">
-            <div class="modal-campana-header">
-                <h2>📦 Lote completado</h2>
-            </div>
-            <div class="modal-campana-body">
-                <p id="lote-resumen" style="font-size:13px; color:#666; margin:0 0 12px;"></p>
-                <div id="lote-resultados-grid" class="lote-resultados-grid"></div>
-            </div>
-            <div class="modal-campana-footer">
-                <div class="modal-campana-acciones">
-                    <button type="button" class="btn-action btn-dark" onclick="cerrarModalLote()">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-ab" class="modal">
-        <div class="modal-content" style="max-width: 720px; max-height: 92vh; overflow-y: auto;">
-            <h2 style="margin-top: 0;">Variantes A/B listas 🔀</h2>
-            <p style="font-size: 13px; color: #666;">Compara dos títulos con los mismos productos.</p>
-            <div class="campana-grid">
-                <div>
-                    <p style="font-weight: 600; font-size: 13px; margin: 0 0 6px;" id="ab-label-a">Variante A</p>
-                    <img id="ab-img-a" src="" alt="Variante A" style="width:100%; border-radius:8px; border:1px solid #eee;">
-                </div>
-                <div>
-                    <p style="font-weight: 600; font-size: 13px; margin: 0 0 6px;" id="ab-label-b">Variante B</p>
-                    <img id="ab-img-b" src="" alt="Variante B" style="width:100%; border-radius:8px; border:1px solid #eee;">
-                </div>
-            </div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:16px;">
-                <button type="button" class="btn-action btn-dark" onclick="guardarVarianteAB('a')">📤 Guardar A</button>
-                <button type="button" class="btn-action btn-dark" onclick="guardarVarianteAB('b')">📤 Guardar B</button>
-                <button type="button" class="btn-action" style="background:#e0e0e0;color:#333;" onclick="cerrarModalAB()">Cerrar</button>
-            </div>
-        </div>
+        <button id="btn-generar" class="btn-action btn-primary" onclick="generarVolante()">
+            Generar Volante (0)
+        </button>
     </div>
 
     <div id="modal-resultado" class="modal">
@@ -1333,7 +781,7 @@
             <img id="imagen-resultado" src="" alt="Volante">
             
             <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 10px; flex-wrap: wrap;">
-                <a id="btn-descargar" class="btn-action btn-primary" style="text-decoration: none; display: inline-block;" href="#" download="volante.png" onclick="return descargarVolanteActual(event)">⬇️ Descargar Imagen</a>
+                <a id="btn-descargar" class="btn-action btn-primary" style="text-decoration: none; display: inline-block;" href="#" download="volante.png">⬇️ Descargar Imagen</a>
                 <button id="btn-compartir-imagen" class="btn-action btn-dark" style="display: none;" onclick="compartirImagen()">📤 Guardar en iPad</button>
                 <button class="btn-action" style="background: #e0e0e0; color: #333;" onclick="cerrarModal()">Cerrar</button>
             </div>
@@ -1345,53 +793,6 @@
                 <h3 style="margin: 0 0 10px 0; font-size: 14px; color: #555;">📝 Copy para Redes Sociales:</h3>
                 <textarea id="texto-copy" readonly style="width: 100%; height: 120px; padding: 10px; border-radius: 5px; border: 1px solid #ddd; resize: none; font-size: 13px;"></textarea>
                 <button onclick="copiarCopy()" class="btn-action btn-dark" style="width: 100%; margin-top: 10px; padding: 10px; font-size: 14px;">📋 Copiar Texto</button>
-                <button onclick="compartirWhatsApp()" class="btn-action btn-whatsapp" style="width: 100%; margin-top: 8px; padding: 10px; font-size: 14px;">💬 Enviar copy por WhatsApp</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-campana" class="modal">
-        <div class="modal-content modal-campana-content">
-            <div class="modal-campana-header">
-                <h2>¡Campaña completa lista! 🚀</h2>
-            </div>
-
-            <div class="modal-campana-body">
-                <div class="campana-grid">
-                    <div>
-                        <p style="font-size: 12px; font-weight: 600; margin: 0 0 6px; text-align: center;">📱 Feed</p>
-                        <img id="campana-feed-img" src="" alt="Volante feed">
-                    </div>
-                    <div>
-                        <p style="font-size: 12px; font-weight: 600; margin: 0 0 6px; text-align: center;">📲 Historia</p>
-                        <img id="campana-historia-img" src="" alt="Volante historia">
-                    </div>
-                </div>
-                <video id="campana-reel-video" controls playsinline></video>
-                <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px dashed #ccc;">
-                    <h3 style="margin: 0 0 8px 0; font-size: 13px; color: #555;">📝 Copy para redes:</h3>
-                    <textarea id="campana-copy" readonly></textarea>
-                </div>
-                <p id="hint-campana-ios" class="ios-hint" style="margin-top: 10px;">
-                    💡 En iPad usa <strong>Guardar</strong> en cada archivo — se abre el menú compartir sin salir del panel.
-                </p>
-            </div>
-
-            <div class="modal-campana-footer">
-                <p class="footer-label" id="campana-footer-label-archivos">Descargar archivos</p>
-                <div class="modal-campana-acciones">
-                    <button type="button" id="btn-dl-feed" class="btn-action btn-dark" onclick="guardarCampanaArchivo('feed')">⬇️ Feed</button>
-                    <button type="button" id="btn-dl-historia" class="btn-action btn-dark" onclick="guardarCampanaArchivo('historia')">⬇️ Historia</button>
-                    <button type="button" id="btn-dl-reel" class="btn-action btn-dark" onclick="guardarCampanaArchivo('reel')">⬇️ Reel</button>
-                </div>
-                <p class="footer-label">Compartir / publicar</p>
-                <div class="modal-campana-acciones">
-                    <button type="button" class="btn-action btn-whatsapp" onclick="compartirCampanaWhatsApp()">💬 WhatsApp</button>
-                    <button type="button" class="btn-action btn-dark" onclick="copiarCampanaCopy()">📋 Copiar copy</button>
-                </div>
-                <div class="modal-campana-acciones" style="margin-top: 8px;">
-                    <button class="btn-action" style="background: #e0e0e0; color: #333;" onclick="cerrarModalCampana()">Cerrar</button>
-                </div>
             </div>
         </div>
     </div>
@@ -1402,8 +803,7 @@
             <video id="video-resultado" controls playsinline></video>
             <div class="modal-actions">
                 <button id="btn-compartir-video" class="btn-action btn-primary" onclick="compartirVideo()">📤 Guardar en iPad</button>
-                <button onclick="compartirVideoWhatsApp()" class="btn-action btn-whatsapp">💬 WhatsApp</button>
-                <a id="btn-descargar-video" class="btn-action btn-dark" style="text-decoration: none; display: inline-block;" href="#" download="reel.mp4" onclick="return descargarVideoActual(event)">⬇️ Descargar</a>
+                <a id="btn-descargar-video" class="btn-action btn-dark" style="text-decoration: none; display: inline-block;" href="#" download="reel.mp4">⬇️ Descargar</a>
                 <button class="btn-action" style="background: #e0e0e0; color: #333;" onclick="cerrarModalVideo()">Cerrar</button>
             </div>
             <div id="hint-video-ios" class="ios-hint visible">
@@ -1438,547 +838,6 @@
         let limiteProductos = 4;
         let inventarioEstancados = [];
         let intervaloProgreso = null;
-        let intervaloCampana = null;
-        let intervaloLote = null;
-        let loteResultadosCache = [];
-        const WHATSAPP_NUM = '573128406312';
-        let campanaAssets = {
-            feed: null, feedBlob: null,
-            historia: null, historiaBlob: null,
-            reel: null, reelBlob: null,
-            nombres: {},
-        };
-
-        async function guardarArchivo(blob, nombre, mimeType) {
-            if (!blob) {
-                alert('El archivo aún no está listo. Espera un momento e intenta de nuevo.');
-                return;
-            }
-
-            const file = new File([blob], nombre, { type: mimeType || blob.type || 'application/octet-stream' });
-
-            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                try {
-                    await navigator.share({ files: [file], title: 'Surtitodo Ideal' });
-                    return;
-                } catch (e) {
-                    if (e.name === 'AbortError') return;
-                }
-            }
-
-            const blobUrl = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.download = nombre;
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
-        }
-
-        async function obtenerBlob(url, cacheKey, cacheObj) {
-            if (cacheObj[cacheKey]) return cacheObj[cacheKey];
-            const res = await fetch(url);
-            if (!res.ok) throw new Error('No se pudo cargar el archivo');
-            const blob = await res.blob();
-            cacheObj[cacheKey] = blob;
-            return blob;
-        }
-
-        function configurarBotonesIOS() {
-            if (!esDispositivoIOS) return;
-
-            document.getElementById('campana-footer-label-archivos').innerText = 'Guardar en iPad';
-            document.getElementById('btn-dl-feed').innerText = '📤 Feed';
-            document.getElementById('btn-dl-historia').innerText = '📤 Historia';
-            document.getElementById('btn-dl-reel').innerText = '📤 Reel';
-            document.getElementById('hint-campana-ios').classList.add('visible');
-
-            const btnDlImg = document.getElementById('btn-descargar');
-            if (btnDlImg) {
-                btnDlImg.innerText = '📤 Guardar imagen';
-                btnDlImg.onclick = (e) => { e.preventDefault(); compartirImagen(); return false; };
-            }
-
-            const btnDlVid = document.getElementById('btn-descargar-video');
-            if (btnDlVid) {
-                btnDlVid.innerText = '📤 Guardar video';
-                btnDlVid.onclick = (e) => { e.preventDefault(); compartirVideo(); return false; };
-            }
-        }
-
-        function descargarVolanteActual(event) {
-            if (esDispositivoIOS) {
-                event.preventDefault();
-                compartirImagen();
-                return false;
-            }
-            return true;
-        }
-
-        function descargarVideoActual(event) {
-            if (esDispositivoIOS) {
-                event.preventDefault();
-                compartirVideo();
-                return false;
-            }
-            return true;
-        }
-
-        async function guardarCampanaArchivo(tipo) {
-            const map = {
-                feed: { url: campanaAssets.feed, key: 'feedBlob', mime: 'image/png' },
-                historia: { url: campanaAssets.historia, key: 'historiaBlob', mime: 'image/png' },
-                reel: { url: campanaAssets.reel, key: 'reelBlob', mime: 'video/mp4' },
-            };
-            const item = map[tipo];
-            if (!item || !item.url) return;
-
-            const btn = document.getElementById('btn-dl-' + tipo);
-            const textoOriginal = btn ? btn.innerText : '';
-            if (btn) { btn.disabled = true; btn.innerText = '⏳...'; }
-
-            try {
-                const blob = await obtenerBlob(item.url, item.key, campanaAssets);
-                const nombre = campanaAssets.nombres[tipo] || `archivo_${tipo}`;
-                await guardarArchivo(blob, nombre, item.mime);
-            } catch (e) {
-                alert('No se pudo guardar el archivo. Intenta de nuevo.');
-            } finally {
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerText = textoOriginal;
-                }
-            }
-        }
-
-        async function guardarArchivoHistorial(url, nombre, mimeType) {
-            try {
-                const res = await fetch(url);
-                if (!res.ok) throw new Error();
-                const blob = await res.blob();
-                await guardarArchivo(blob, nombre, mimeType);
-            } catch (e) {
-                alert('No se pudo abrir el archivo del historial.');
-            }
-        }
-
-        function obtenerConfigActual() {
-            let tituloPrincipal = document.getElementById('selector-titulo').value;
-            if (tituloPrincipal === 'PERSONALIZADO') {
-                tituloPrincipal = document.getElementById('input-titulo-manual').value || 'Ofertas Surtitodo';
-            }
-            return {
-                plantilla: document.getElementById('selector-plantilla').value,
-                tema: document.getElementById('selector-tema').value,
-                orientacion: document.getElementById('selector-orientacion').value,
-                tituloPrincipal,
-                textoTagline: document.getElementById('selector-tagline').value,
-                plantillaVideo: document.getElementById('selector-plantilla-video').value,
-                idsSeleccionados: [...idsSeleccionados],
-            };
-        }
-
-        function aplicarConfig(config) {
-            if (!config) return;
-            if (config.plantilla) {
-                document.getElementById('selector-plantilla').value = config.plantilla;
-                cambiarLimitePlantilla();
-            }
-            if (config.tema) document.getElementById('selector-tema').value = config.tema;
-            if (config.orientacion) document.getElementById('selector-orientacion').value = config.orientacion;
-            if (config.tituloPrincipal) {
-                const sel = document.getElementById('selector-titulo');
-                const opciones = [...sel.options].map(o => o.value);
-                if (opciones.includes(config.tituloPrincipal)) {
-                    sel.value = config.tituloPrincipal;
-                    document.getElementById('input-titulo-manual').style.display = 'none';
-                } else {
-                    sel.value = 'PERSONALIZADO';
-                    document.getElementById('input-titulo-manual').value = config.tituloPrincipal;
-                    document.getElementById('input-titulo-manual').style.display = 'block';
-                }
-            }
-            if (config.textoTagline) document.getElementById('selector-tagline').value = config.textoTagline;
-            if (config.plantillaVideo) document.getElementById('selector-plantilla-video').value = config.plantillaVideo;
-            if (config.idsSeleccionados && config.idsSeleccionados.length) {
-                idsSeleccionados = config.idsSeleccionados.map(String);
-                renderizarGrilla();
-                actualizarBotonFlotante();
-            }
-            actualizarValidacion();
-        }
-
-        async function actualizarValidacion() {
-            const panel = document.getElementById('validacion-panel');
-            if (idsSeleccionados.length === 0) {
-                panel.classList.remove('visible', 'error', 'warning', 'ok');
-                return;
-            }
-
-            try {
-                const config = obtenerConfigActual();
-                const res = await fetch('/api/validar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        idsSeleccionados,
-                        plantilla: config.plantilla,
-                        plantillaVideo: config.plantillaVideo,
-                        modo: 'ambos',
-                    }),
-                });
-                const v = await res.json();
-                panel.classList.add('visible');
-                panel.classList.remove('error', 'warning', 'ok');
-
-                let html = '';
-                if (!v.valido) {
-                    panel.classList.add('error');
-                    html = '<strong>❌ Corrige antes de generar:</strong><ul>' +
-                        v.errores.map(e => `<li>${e}</li>`).join('') + '</ul>';
-                } else if (v.advertencias && v.advertencias.length) {
-                    panel.classList.add('warning');
-                    html = '<strong>⚠️ Advertencias:</strong><ul>' +
-                        v.advertencias.map(a => `<li>${a}</li>`).join('') + '</ul>';
-                } else {
-                    panel.classList.add('ok');
-                    html = '✅ Selección válida — listo para generar.';
-                }
-                panel.innerHTML = html;
-            } catch (e) {
-                panel.classList.remove('visible');
-            }
-        }
-
-        async function validarAntesDeGenerar(modo) {
-            const config = obtenerConfigActual();
-            const res = await fetch('/api/validar', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    idsSeleccionados,
-                    plantilla: config.plantilla,
-                    plantillaVideo: config.plantillaVideo,
-                    modo,
-                }),
-            });
-            const v = await res.json();
-            if (!v.valido) {
-                alert('❌ ' + v.errores.join('\n'));
-                return false;
-            }
-            if (v.advertencias && v.advertencias.length) {
-                const continuar = confirm('⚠️ Advertencias:\n\n' + v.advertencias.join('\n') + '\n\n¿Continuar de todos modos?');
-                if (!continuar) return false;
-            }
-            return true;
-        }
-
-        function calcularPorcentajeDescuento(p) {
-            const desc = parseFloat(p.descuento_promo || 0);
-            if (desc <= 0) return 0;
-            return desc <= 100 ? desc : Math.round((desc / p.precio_venta_final) * 100);
-        }
-
-        async function aplicarSugerencia(tipo) {
-            const limite = limiteProductos;
-
-            if (tipo === 'estancados') {
-                if (inventarioEstancados.length === 0) {
-                    try {
-                        const res = await fetch('/api/local-estancados');
-                        inventarioEstancados = await res.json();
-                    } catch (e) {
-                        alert('No se pudieron cargar los estancados.');
-                        return;
-                    }
-                }
-                if (!inventarioEstancados.length) {
-                    alert('No hay productos estancados en este momento.');
-                    return;
-                }
-                idsSeleccionados = inventarioEstancados.slice(0, limite).map(p => p.id_producto.toString().trim());
-            } else if (tipo === 'mejorDescuento') {
-                const ofertas = inventarioGlobal
-                    .filter(p => p.en_promo == 1 && parseFloat(p.descuento_promo) > 0)
-                    .sort((a, b) => calcularPorcentajeDescuento(b) - calcularPorcentajeDescuento(a));
-                if (!ofertas.length) {
-                    alert('No hay ofertas activas.');
-                    return;
-                }
-                idsSeleccionados = [ofertas[0].id_producto.toString().trim()];
-            } else {
-                const ofertas = inventarioGlobal
-                    .filter(p => p.en_promo == 1 && parseFloat(p.descuento_promo) > 0)
-                    .sort((a, b) => calcularPorcentajeDescuento(b) - calcularPorcentajeDescuento(a));
-                if (!ofertas.length) {
-                    alert('No hay ofertas activas.');
-                    return;
-                }
-                idsSeleccionados = ofertas.slice(0, limite).map(p => p.id_producto.toString().trim());
-            }
-
-            renderizarGrilla();
-            actualizarBotonFlotante();
-            actualizarValidacion();
-        }
-
-        async function cargarPresets() {
-            try {
-                const res = await fetch('/api/presets');
-                const presets = await res.json();
-                const cont = document.getElementById('presets-lista');
-                if (!presets.length) {
-                    cont.innerHTML = '<p style="color: #888; font-size: 13px; margin: 0;">No hay presets guardados.</p>';
-                    return;
-                }
-                cont.innerHTML = presets.map(p => `
-                    <div class="preset-item">
-                        <span>${p.nombre}</span>
-                        <div style="display:flex; gap:6px;">
-                            <button onclick="aplicarPreset('${p.id}')">Cargar</button>
-                            <button class="btn-borrar" onclick="borrarPreset('${p.id}')">✕</button>
-                        </div>
-                    </div>
-                `).join('');
-                window._presetsCache = presets;
-            } catch (e) {
-                console.warn('Error cargando presets');
-            }
-        }
-
-        async function guardarPreset() {
-            const nombre = document.getElementById('input-preset-nombre').value.trim();
-            if (!nombre) {
-                alert('Escribe un nombre para el preset.');
-                return;
-            }
-            const config = obtenerConfigActual();
-            const res = await fetch('/api/presets', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nombre, config }),
-            });
-            if (res.ok) {
-                document.getElementById('input-preset-nombre').value = '';
-                cargarPresets();
-                alert('✅ Preset guardado.');
-            }
-        }
-
-        function aplicarPreset(id) {
-            const preset = (window._presetsCache || []).find(p => p.id === id);
-            if (preset) aplicarConfig(preset.config);
-        }
-
-        async function borrarPreset(id) {
-            if (!confirm('¿Eliminar este preset?')) return;
-            await fetch('/api/presets/' + id, { method: 'DELETE' });
-            cargarPresets();
-        }
-
-        async function cargarHistorial() {
-            try {
-                const res = await fetch('/api/historial');
-                const historial = await res.json();
-                const cont = document.getElementById('historial-lista');
-                if (!historial.length) {
-                    cont.innerHTML = '<p style="color: #888; font-size: 13px; margin: 0;">Sin campañas guardadas aún.</p>';
-                    return;
-                }
-                cont.innerHTML = historial.slice(0, 15).map(h => {
-                    const fecha = new Date(h.fecha).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' });
-                    const tipo = h.tipo === 'campana' ? '🚀 Campaña' : h.tipo === 'lote' ? '📦 Lote' : h.tipo === 'reel' ? '🎬 Reel' : '🖼️ Volante';
-                    const titulo = h.titulo || h.plantillaVideo || 'Generación';
-                    const productos = (h.nombresProductos || []).slice(0, 3).join(', ');
-                    let acciones = `<button class="btn-repetir" onclick="repetirHistorial('${h.id}')">↻ Repetir</button>`;
-                    const fechaArch = new Date(h.fecha).toISOString().slice(0, 10);
-                    if (h.volanteFeed) acciones += `<button onclick="guardarArchivoHistorial('${h.volanteFeed}','Feed_${fechaArch}.png','image/png')">Feed</button>`;
-                    if (h.volanteHistoria) acciones += `<button onclick="guardarArchivoHistorial('${h.volanteHistoria}','Historia_${fechaArch}.png','image/png')">Historia</button>`;
-                    if (h.reel) acciones += `<button onclick="guardarArchivoHistorial('${h.reel}','Reel_${fechaArch}.mp4','video/mp4')">Reel</button>`;
-                    if (h.tipo === 'lote' && h.resultados?.length) {
-                        acciones += `<button onclick="verLoteHistorial('${h.id}')">📦 Ver lote</button>`;
-                    }
-                    acciones += `<button onclick="borrarHistorial('${h.id}')">✕</button>`;
-                    return `<div class="historial-item">
-                        <div>
-                            <strong>${tipo}: ${titulo}</strong>
-                            <div class="meta">${fecha} · ${(h.nombresProductos || []).length} productos</div>
-                            <div class="meta">${productos}${(h.nombresProductos || []).length > 3 ? '...' : ''}</div>
-                        </div>
-                        <div class="acciones">${acciones}</div>
-                    </div>`;
-                }).join('');
-                window._historialCache = historial;
-            } catch (e) {
-                console.warn('Error cargando historial');
-            }
-        }
-
-        function repetirHistorial(id) {
-            const item = (window._historialCache || []).find(h => h.id === id);
-            if (!item) return;
-            if (item.idsSeleccionados) {
-                idsSeleccionados = item.idsSeleccionados.map(String);
-            }
-            aplicarConfig({
-                tituloPrincipal: item.titulo,
-                tema: item.tema,
-                plantilla: item.plantilla,
-                textoTagline: item.textoTagline,
-                plantillaVideo: item.plantillaVideo,
-                idsSeleccionados: item.idsSeleccionados,
-            });
-            renderizarGrilla();
-            actualizarBotonFlotante();
-            actualizarValidacion();
-            window.scrollTo({ top: document.getElementById('grid-productos').offsetTop - 20, behavior: 'smooth' });
-        }
-
-        async function borrarHistorial(id) {
-            if (!confirm('¿Eliminar del historial?')) return;
-            await fetch('/api/historial/' + id, { method: 'DELETE' });
-            cargarHistorial();
-        }
-
-        function abrirWhatsApp(texto) {
-            window.open(`https://wa.me/${WHATSAPP_NUM}?text=${encodeURIComponent(texto)}`, '_blank');
-        }
-
-        function compartirWhatsApp() {
-            const copy = document.getElementById('texto-copy').value;
-            if (!copy) return;
-            abrirWhatsApp(copy);
-        }
-
-        function compartirVideoWhatsApp() {
-            const copy = document.getElementById('texto-copy').value ||
-                '🎬 ¡Nueva oferta en Surtitodo Ideal! Pide en surtitodoideal.com · WhatsApp 312 840 6312';
-            abrirWhatsApp(copy + '\n\n(Reel generado — adjunta el video desde tu galería)');
-        }
-
-        function copiarCampanaCopy() {
-            const texto = document.getElementById('campana-copy');
-            texto.select();
-            document.execCommand('copy');
-            alert('✅ Copy copiado.');
-        }
-
-        function compartirCampanaWhatsApp() {
-            const copy = document.getElementById('campana-copy').value;
-            abrirWhatsApp(copy + '\n\n(Reel y volantes listos — adjunta desde tu galería)');
-        }
-
-        async function prepararCampanaAssets(data) {
-            const fecha = new Date().toISOString().slice(0, 10);
-            campanaAssets = {
-                feed: data.volanteFeed,
-                feedBlob: null,
-                historia: data.volanteHistoria,
-                historiaBlob: null,
-                reel: data.reel,
-                reelBlob: null,
-                nombres: {
-                    feed: `Volante_Feed_${fecha}.png`,
-                    historia: `Volante_Historia_${fecha}.png`,
-                    reel: `Reel_Campana_${fecha}.mp4`,
-                },
-            };
-
-            document.getElementById('campana-feed-img').src = data.volanteFeed + '?t=' + Date.now();
-            document.getElementById('campana-historia-img').src = data.volanteHistoria + '?t=' + Date.now();
-            document.getElementById('campana-reel-video').src = data.reel + '?t=' + Date.now();
-            document.getElementById('campana-copy').value = data.copy;
-
-            Promise.all([
-                obtenerBlob(data.volanteFeed, 'feedBlob', campanaAssets).catch(() => null),
-                obtenerBlob(data.volanteHistoria, 'historiaBlob', campanaAssets).catch(() => null),
-                obtenerBlob(data.reel, 'reelBlob', campanaAssets).catch(() => null),
-            ]);
-
-            const body = document.querySelector('.modal-campana-body');
-            if (body) body.scrollTop = 0;
-        }
-
-        function cerrarModalCampana() {
-            document.getElementById('modal-campana').style.display = 'none';
-            const video = document.getElementById('campana-reel-video');
-            video.pause();
-            video.removeAttribute('src');
-            campanaAssets = {
-                feed: null, feedBlob: null,
-                historia: null, historiaBlob: null,
-                reel: null, reelBlob: null,
-                nombres: {},
-            };
-        }
-
-        async function generarCampanaCompleta() {
-            if (idsSeleccionados.length === 0) {
-                alert('Selecciona al menos un producto.');
-                return;
-            }
-            if (!(await validarAntesDeGenerar('campana'))) return;
-
-            const btn = document.getElementById('btn-campana-completa');
-            btn.disabled = true;
-            mostrarCarga('🚀 Creando campaña completa...');
-
-            if (intervaloCampana) clearInterval(intervaloCampana);
-            intervaloCampana = setInterval(async () => {
-                try {
-                    const [resCampana, resRender] = await Promise.all([
-                        fetch('/api/campana-progress'),
-                        fetch('/api/render-progress'),
-                    ]);
-                    const data = await resCampana.json();
-                    const render = await resRender.json();
-
-                    let mensaje = data.mensaje || render.mensaje;
-                    let porcentaje = data.porcentaje || 0;
-
-                    if (data.fase === 'reel' && render.porcentaje > 0) {
-                        porcentaje = 45 + Math.round(render.porcentaje * 0.55);
-                        mensaje = render.mensaje || data.mensaje;
-                    }
-
-                    if (mensaje) {
-                        document.getElementById('loading-text').innerText = mensaje;
-                    }
-                    if (porcentaje > 0) {
-                        document.getElementById('loading-progress').style.width = porcentaje + '%';
-                        document.getElementById('loading-porcentaje').innerText = porcentaje + '%';
-                    }
-                } catch (e) { /* silencioso */ }
-            }, 1500);
-
-            const config = obtenerConfigActual();
-
-            try {
-                const res = await fetch('/api/campana-completa', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(config),
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || 'Error generando campaña');
-
-                await prepararCampanaAssets(data);
-                document.getElementById('modal-campana').style.display = 'flex';
-                cargarHistorial();
-            } catch (error) {
-                alert(error.message || 'Error generando la campaña.');
-            } finally {
-                if (intervaloCampana) {
-                    clearInterval(intervaloCampana);
-                    intervaloCampana = null;
-                }
-                ocultarCarga();
-                btn.disabled = false;
-            }
-        }
 
         function mostrarCarga(mensaje) {
             document.getElementById('loading-text').innerText = mensaje || 'Renderizando video...';
@@ -2181,7 +1040,6 @@
             }
         
             reiniciarYRenderizar();
-            actualizarBotonFlotante();
         }
 
         function reiniciarYRenderizar() {
@@ -2285,345 +1143,21 @@
                 cardElement.classList.remove('selected');
             }
             actualizarBotonFlotante();
-            actualizarValidacion();
         }
 
         function actualizarBotonFlotante() {
             const container = document.getElementById('action-container');
             const btnVolante = document.getElementById('btn-generar');
-            const dockContador = document.getElementById('dock-contador');
-            const n = idsSeleccionados.length;
-
-            if (n > 0) {
-                container.classList.add('visible');
-                btnVolante.innerText = `🖼️ Volante (${n})`;
-                dockContador.innerHTML = `<strong>${n}</strong> producto${n !== 1 ? 's' : ''} seleccionado${n !== 1 ? 's' : ''}`;
+            
+            if (idsSeleccionados.length > 0) {
+                container.classList.add('visible'); 
+                btnVolante.innerText = `Generar Diseño (${idsSeleccionados.length})`;
             } else {
-                container.classList.remove('visible');
-                dockContador.innerHTML = '<strong>0</strong> productos seleccionados';
+                container.classList.remove('visible'); 
             }
-
-            const bannerRemate = document.getElementById('modo-remate-banner');
-            if (bannerRemate) {
-                bannerRemate.classList.toggle('visible', pestanaActual === 'estancados' && n > 0);
-            }
-        }
-
-        function aplicarPresetRemate() {
-            document.getElementById('selector-plantilla').value = '4';
-            cambiarLimitePlantilla();
-            document.getElementById('selector-tema').value = 'sorpresa';
-            document.getElementById('selector-titulo').value = 'PERSONALIZADO';
-            document.getElementById('input-titulo-manual').value = 'Liquidación Total';
-            document.getElementById('input-titulo-manual').style.display = 'block';
-            document.getElementById('selector-tagline').value = '¡Últimas unidades!';
-            document.getElementById('selector-plantilla-video').value = 'ReelBrutalismo';
-            document.getElementById('selector-orientacion').value = 'historia';
-            actualizarValidacion();
-            alert('✅ Preset remate aplicado. Genera volante, reel o campaña completa.');
-        }
-
-        let variantesAB = { a: null, b: null, nombres: {} };
-
-        async function generarVariantesAB() {
-            if (idsSeleccionados.length === 0) {
-                alert('Selecciona productos primero.');
-                return;
-            }
-            if (!(await validarAntesDeGenerar('volante'))) return;
-
-            const tituloA = prompt('Título Variante A:', document.getElementById('selector-titulo').value === 'PERSONALIZADO'
-                ? document.getElementById('input-titulo-manual').value
-                : document.getElementById('selector-titulo').value);
-            if (!tituloA) return;
-
-            const tituloB = prompt('Título Variante B:', 'Precios de Locura');
-            if (!tituloB) return;
-
-            mostrarCarga('🔀 Generando variantes A/B...');
-
-            const plantilla = document.getElementById('selector-plantilla').value;
-            const tema = document.getElementById('selector-tema').value;
-            const orientacion = document.getElementById('selector-orientacion').value;
-            const textoTagline = document.getElementById('selector-tagline').value;
-
-            try {
-                const base = { idsSeleccionados, plantilla, tema, orientacion, textoTagline };
-                const [resA, resB] = await Promise.all([
-                    fetch('/generar-volante', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ ...base, tituloPrincipal: tituloA }) }),
-                    fetch('/generar-volante', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ ...base, tituloPrincipal: tituloB }) }),
-                ]);
-                if (!resA.ok || !resB.ok) throw new Error('Error generando una de las variantes');
-
-                const blobA = await resA.blob();
-                const blobB = await resB.blob();
-                const urlA = URL.createObjectURL(blobA);
-                const urlB = URL.createObjectURL(blobB);
-
-                variantesAB = {
-                    a: blobA, b: blobB,
-                    nombres: {
-                        a: `Volante_A_${tituloA.replace(/\s+/g, '_')}.png`,
-                        b: `Volante_B_${tituloB.replace(/\s+/g, '_')}.png`,
-                    },
-                };
-
-                document.getElementById('ab-label-a').innerText = 'A: ' + tituloA;
-                document.getElementById('ab-label-b').innerText = 'B: ' + tituloB;
-                document.getElementById('ab-img-a').src = urlA;
-                document.getElementById('ab-img-b').src = urlB;
-                document.getElementById('modal-ab').style.display = 'flex';
-            } catch (e) {
-                alert(e.message || 'Error generando variantes A/B');
-            } finally {
-                ocultarCarga();
-            }
-        }
-
-        async function guardarVarianteAB(letra) {
-            const blob = variantesAB[letra];
-            if (!blob) return;
-            await guardarArchivo(blob, variantesAB.nombres[letra], 'image/png');
-        }
-
-        function cerrarModalAB() {
-            document.getElementById('modal-ab').style.display = 'none';
-        }
-
-        async function cargarCalendario() {
-            try {
-                const res = await fetch('/api/calendario');
-                const eventos = await res.json();
-                const cont = document.getElementById('calendario-lista');
-                if (!eventos.length) {
-                    cont.innerHTML = '<p style="color:#888;font-size:13px;margin:0;">Sin eventos próximos.</p>';
-                    return;
-                }
-                cont.innerHTML = eventos.map(ev => {
-                    const dias = ev.diasRestantes;
-                    const badge = dias === 0 ? '¡Hoy!' : dias === 1 ? 'Mañana' : `En ${dias} días`;
-                    return `<div class="calendario-item">
-                        <div>
-                            <strong>${ev.nombre}</strong>
-                            <div style="font-size:12px;color:#888;">${ev.fechaTexto} · Tema: ${ev.tema}</div>
-                        </div>
-                        <div style="display:flex;gap:6px;align-items:center;">
-                            <span class="fecha-badge">${badge}</span>
-                            <button onclick="aplicarEventoCalendario('${ev.id}')" style="border:none;background:var(--primary);color:white;padding:5px 10px;border-radius:6px;font-size:12px;cursor:pointer;">Aplicar</button>
-                        </div>
-                    </div>`;
-                }).join('');
-                window._calendarioCache = eventos;
-            } catch (e) {
-                document.getElementById('calendario-lista').innerHTML = '<p style="color:#888;font-size:13px;">Calendario no disponible.</p>';
-            }
-        }
-
-        function aplicarEventoCalendario(id) {
-            const ev = (window._calendarioCache || []).find(e => e.id === id);
-            if (!ev) return;
-            aplicarConfig({
-                tema: ev.tema,
-                tituloPrincipal: ev.titulo,
-                textoTagline: ev.tagline || 'Solo por tiempo limitado',
-                plantillaVideo: ev.plantillaVideo || 'PromoReel',
-            });
-            alert(`✅ Configuración "${ev.nombre}" aplicada.`);
-        }
-
-        async function cargarBiblioteca() {
-            try {
-                const res = await fetch('/api/biblioteca');
-                const items = await res.json();
-                const grid = document.getElementById('biblioteca-grid');
-                if (!items.length) {
-                    grid.innerHTML = '<p style="grid-column:1/-1;font-size:12px;color:#888;margin:0;">Sin assets. Sube imágenes arriba.</p>';
-                    return;
-                }
-                grid.innerHTML = items.map(item =>
-                    `<div class="biblioteca-item" title="${item.nombre}">
-                        <img src="${item.url}" alt="${item.nombre}">
-                    </div>`
-                ).join('');
-            } catch (e) {
-                console.warn('Biblioteca no disponible');
-            }
-        }
-
-        async function subirABiblioteca(input) {
-            if (!input.files || !input.files.length) return;
-            const formData = new FormData();
-            for (const file of input.files) formData.append('archivos', file);
-
-            try {
-                const res = await fetch('/api/biblioteca/upload', { method: 'POST', body: formData });
-                if (!res.ok) throw new Error();
-                cargarBiblioteca();
-                alert('✅ Archivos subidos a la biblioteca.');
-            } catch (e) {
-                alert('Error subiendo archivos.');
-            }
-            input.value = '';
-        }
-
-        function necesitaSeleccionLote(tipo) {
-            return tipo === 'formatos_volante' || tipo === 'reels_multi';
-        }
-
-        async function previewLote() {
-            const tipo = document.getElementById('selector-tipo-lote').value;
-            const preview = document.getElementById('lote-preview');
-
-            if (necesitaSeleccionLote(tipo) && idsSeleccionados.length === 0) {
-                preview.innerHTML = '⚠️ Este lote requiere productos seleccionados en la grilla.';
-                return;
-            }
-
-            preview.innerHTML = '⏳ Calculando tareas...';
-            try {
-                const config = obtenerConfigActual();
-                const res = await fetch('/api/lote/preview', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ tipo, ...config, idsSeleccionados }),
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error);
-
-                preview.innerHTML = `<strong>${data.total} tareas en cola:</strong><br>` +
-                    data.tareas.map((t) => `• ${t.etiqueta}`).join('<br>');
-            } catch (e) {
-                preview.innerHTML = '❌ ' + (e.message || 'No se pudo calcular el lote');
-            }
-        }
-
-        async function iniciarLote() {
-            const tipo = document.getElementById('selector-tipo-lote').value;
-            const btn = document.getElementById('btn-iniciar-lote');
-
-            if (necesitaSeleccionLote(tipo) && idsSeleccionados.length === 0) {
-                alert('Selecciona productos en la grilla para este tipo de lote.');
-                return;
-            }
-
-            if (necesitaSeleccionLote(tipo) && !(await validarAntesDeGenerar(tipo === 'reels_multi' ? 'video' : 'volante'))) {
-                return;
-            }
-
-            btn.disabled = true;
-            mostrarCarga('📦 Procesando cola en segundo plano...');
-
-            if (intervaloLote) clearInterval(intervaloLote);
-            intervaloLote = setInterval(async () => {
-                try {
-                    const [lote, render] = await Promise.all([
-                        fetch('/api/lote/progreso').then((r) => r.json()),
-                        fetch('/api/render-progress').then((r) => r.json()),
-                    ]);
-
-                    let mensaje = lote.mensaje || 'Procesando...';
-                    let porcentaje = lote.porcentaje || 0;
-
-                    if (lote.activo && render.porcentaje > 0 && lote.mensaje?.includes('Reel')) {
-                        const base = ((lote.tareaActual - 1) / lote.totalTareas) * 100;
-                        const tramo = (1 / lote.totalTareas) * 100;
-                        porcentaje = Math.round(base + (render.porcentaje / 100) * tramo);
-                        mensaje = render.mensaje || lote.mensaje;
-                    }
-
-                    document.getElementById('loading-text').innerText = mensaje;
-                    if (porcentaje > 0) {
-                        document.getElementById('loading-progress').style.width = porcentaje + '%';
-                        document.getElementById('loading-porcentaje').innerText = porcentaje + '%';
-                    }
-                } catch (e) { /* silencioso */ }
-            }, 1500);
-
-            try {
-                const config = obtenerConfigActual();
-                const res = await fetch('/api/lote/iniciar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ tipo, ...config, idsSeleccionados }),
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error);
-
-                let estado;
-                do {
-                    await new Promise((r) => setTimeout(r, 2000));
-                    estado = await fetch('/api/lote/progreso').then((r) => r.json());
-                } while (estado.activo);
-
-                if (estado.error) throw new Error(estado.error);
-
-                loteResultadosCache = estado.resultados || [];
-                mostrarResultadosLote(estado);
-                cargarHistorial();
-            } catch (e) {
-                alert(e.message || 'Error en la cola de lote');
-            } finally {
-                if (intervaloLote) {
-                    clearInterval(intervaloLote);
-                    intervaloLote = null;
-                }
-                ocultarCarga();
-                btn.disabled = false;
-            }
-        }
-
-        function mostrarResultadosLote(estado) {
-            document.getElementById('lote-resumen').innerText =
-                `${estado.resultados.length} archivos generados · carpeta ${estado.loteId || ''}`;
-
-            const grid = document.getElementById('lote-resultados-grid');
-            grid.innerHTML = estado.resultados.map((item, i) => {
-                const media = item.tipo === 'reel'
-                    ? `<video src="${item.url}?t=${Date.now()}" controls playsinline></video>`
-                    : `<img src="${item.url}?t=${Date.now()}" alt="${item.etiqueta}">`;
-                return `<div class="lote-resultado-item">
-                    ${media}
-                    <p>${item.etiqueta}</p>
-                    <button type="button" onclick="guardarItemLote(${i})">${esDispositivoIOS ? '📤 Guardar' : '⬇️ Descargar'}</button>
-                </div>`;
-            }).join('');
-
-            document.getElementById('modal-lote').style.display = 'flex';
-        }
-
-        async function guardarItemLote(indice) {
-            const item = loteResultadosCache[indice];
-            if (!item) return;
-            try {
-                const res = await fetch(item.url);
-                const blob = await res.blob();
-                const mime = item.tipo === 'reel' ? 'video/mp4' : 'image/png';
-                await guardarArchivo(blob, item.nombreArchivo || `lote_${indice}.${item.tipo === 'reel' ? 'mp4' : 'png'}`, mime);
-            } catch (e) {
-                alert('No se pudo guardar el archivo.');
-            }
-        }
-
-        function cerrarModalLote() {
-            document.getElementById('modal-lote').style.display = 'none';
-        }
-
-        function verLoteHistorial(id) {
-            const item = (window._historialCache || []).find((h) => h.id === id);
-            if (!item || !item.resultados?.length) return;
-            loteResultadosCache = item.resultados;
-            mostrarResultadosLote({ resultados: item.resultados, loteId: item.loteId });
         }
 
         async function generarVolante() {
-            if (idsSeleccionados.length === 0) {
-                alert('Selecciona al menos un producto.');
-                return;
-            }
-            if (!(await validarAntesDeGenerar('volante'))) return;
-
             const btn = document.getElementById('btn-generar');
             const textoOriginal = btn.innerText;
             btn.innerText = '⏳ Diseñando...';
@@ -2638,17 +1172,25 @@
                 tituloPrincipal = document.getElementById('input-titulo-manual').value || 'Ofertas Surtitodo';
             }
             const textoTagline = document.getElementById('selector-tagline').value;
+            const qrDestino = document.getElementById('selector-qr').value;
+            const qrUrlPersonalizada = document.getElementById('input-qr-url').value;
             
             try {
                 const res = await fetch('/generar-volante', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ idsSeleccionados, plantilla, tema, tituloPrincipal, textoTagline, orientacion }) 
+                    body: JSON.stringify({
+                        idsSeleccionados,
+                        plantilla,
+                        tema,
+                        tituloPrincipal,
+                        textoTagline,
+                        orientacion,
+                        qrDestino,
+                        qrUrlPersonalizada,
+                    })
                 });
-                if (!res.ok) {
-                    const err = await res.json().catch(() => ({}));
-                    throw new Error(err.error || 'Error en el servidor');
-                }
+                if (!res.ok) throw new Error('Error en el servidor');
 
                 const blob = await res.blob();
                 blobImagenActual = blob;
@@ -2663,19 +1205,52 @@
                 document.getElementById('btn-descargar').download = `Volante_${nombreLimpio}_${fecha}.png`;
                 document.getElementById('btn-descargar').href = imageUrl;
                 
-                generarTextoCopy(tituloPrincipal);
+                generarTextoCopy(tituloPrincipal, tema);
                 document.getElementById('modal-resultado').style.display = 'flex';
-                cargarHistorial();
                 
             } catch (error) {
-                alert(error.message || 'Hubo un error al generar el volante.');
+                alert('Hubo un error al generar el volante.');
             } finally {
                 btn.innerText = textoOriginal;
                 btn.disabled = false;
             }
         }
 
-        function generarTextoCopy(titulo) {
+        async function generarTextoCopy(titulo, temaValor) {
+            const temaSeleccionado = temaValor || document.getElementById('selector-tema').value;
+            const textoTagline = document.getElementById('selector-tagline').value;
+            const usarIA = document.getElementById('chk-usar-ia').checked;
+            const textarea = document.getElementById('texto-copy');
+
+            textarea.value = '⏳ Generando copy...';
+
+            try {
+                const res = await fetch('/api/ia/copy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        idsSeleccionados,
+                        titulo,
+                        tema: temaSeleccionado,
+                        tagline: textoTagline,
+                        usarIA,
+                    }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Error generando copy');
+
+                let copy = data.copyFeed || '';
+                if (data.hashtags) copy += `\n\n${data.hashtags}`;
+                if (data.fallback && data.aviso) {
+                    copy = `ℹ️ ${data.aviso}\n\n${copy}`;
+                }
+                textarea.value = copy;
+            } catch (error) {
+                generarTextoCopyLocal(titulo, temaSeleccionado);
+            }
+        }
+
+        function generarTextoCopyLocal(titulo) {
             const temaSeleccionado = document.getElementById('selector-tema').value;
             const productosElegidos = inventarioGlobal.filter(p => idsSeleccionados.includes(p.id_producto.trim()));
             let copy = '';
@@ -2749,7 +1324,6 @@
                 renderizarGrilla();
                 actualizarBotonFlotante();
             }
-            actualizarValidacion();
         }
 
         function verificarTituloManual() {
@@ -2768,25 +1342,35 @@
                 alert("¡Selecciona al menos un producto para el video!");
                 return;
             }
-            if (!(await validarAntesDeGenerar('video'))) return;
 
             const plantillaVideo = document.getElementById('selector-plantilla-video').value;
+            const usarVoz = document.getElementById('chk-voz-reel').checked;
+            const guionVozManual = document.getElementById('guion-voz-manual').value;
+            let tituloReel = document.getElementById('selector-titulo').value;
+            if (tituloReel === 'PERSONALIZADO') {
+                tituloReel = document.getElementById('input-titulo-manual').value || '';
+            }
             const btn = document.getElementById('btn-generar-video');
             btn.disabled = true;
-            mostrarCarga('🎬 Renderizando reel a 60fps...');
+            mostrarCarga(usarVoz ? '🎬 Renderizando reel con voz...' : '🎬 Renderizando reel a 60fps...');
             
             try {
                 const res = await fetch('/generar-video', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ idsSeleccionados, plantillaVideo })
+                    body: JSON.stringify({
+                        idsSeleccionados,
+                        plantillaVideo,
+                        usarVoz,
+                        guionVozManual,
+                        tituloReel: tituloReel || undefined,
+                    })
                 });
                 if (res.ok) {
                     const data = await res.json();
                     const fecha = new Date().toISOString().slice(0, 10);
                     const nombre = data.nombreArchivo || `Reel_${plantillaVideo}_${fecha}.mp4`;
                     await mostrarVideo(data.urlVideo, nombre);
-                    cargarHistorial();
                 } else {
                     const err = await res.json().catch(() => ({}));
                     alert(err.error || "Hubo un error al generar el video. Revisa la consola del servidor.");
@@ -2799,6 +1383,36 @@
                 btn.disabled = false;
             }
         }
+
+        function toggleQrPersonalizado() {
+            const selector = document.getElementById('selector-qr');
+            const input = document.getElementById('input-qr-url');
+            input.style.display = selector.value === 'personalizado' ? 'block' : 'none';
+        }
+
+        function toggleGuionVoz() {
+            const chk = document.getElementById('chk-voz-reel');
+            const ta = document.getElementById('guion-voz-manual');
+            ta.style.display = chk.checked ? 'block' : 'none';
+        }
+
+        async function cargarEstadoTier4() {
+            const el = document.getElementById('tier4-status');
+            if (!el) return;
+            try {
+                const res = await fetch('/api/tier4/status');
+                const data = await res.json();
+                const ia = data.iaConfigurada ? '✅ Gemini listo' : '⚠️ Sin GEMINI_API_KEY (copy local)';
+                el.textContent = `${ia} · Voz: ${data.proveedorVoz} · QR gratis. Nada de OpenAI ni tarjeta.`;
+                if (!data.iaConfigurada) {
+                    document.getElementById('chk-usar-ia').checked = false;
+                }
+            } catch (e) {
+                el.textContent = 'Modo gratuito: QR y voz sin costo. Copy local si no hay API key.';
+            }
+        }
+
+        cargarEstadoTier4();
 
         function toggleTheme() {
             document.body.classList.toggle('dark-theme');
@@ -2900,15 +1514,6 @@
 
         cargarInfoServidor();
         cargarDatos();
-        cargarPresets();
-        cargarHistorial();
-        cargarCalendario();
-        cargarBiblioteca();
-        configurarBotonesIOS();
-        previewLote();
-
-        document.getElementById('selector-plantilla').addEventListener('change', actualizarValidacion);
-        document.getElementById('selector-plantilla-video').addEventListener('change', actualizarValidacion);
     </script>
 </body>
 </html>

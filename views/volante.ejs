@@ -169,7 +169,14 @@
         /* Creamos 3 zonas exactas para que nunca se toquen */
         .footer-left { flex: 1; display: flex; justify-content: flex-start; }
         .footer-center { flex: 1; display: flex; justify-content: center; }
-        .footer-right { flex: 1; display: flex; justify-content: flex-end; }
+        .footer-right { flex: 1; display: flex; justify-content: flex-end; align-items: center; gap: 16px; }
+
+        .footer-qr {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            background: #fff; padding: 6px; border-radius: 10px;
+        }
+        .footer-qr img { width: 72px; height: 72px; display: block; }
+        .footer-qr small { color: #111; font-size: 10px; font-weight: 700; text-transform: uppercase; }
 
         /* Teléfono a la izquierda */
         .contact-pill {
@@ -921,6 +928,12 @@
         </div>
 
         <div class="footer-right">
+            <% if (typeof qrDataUrl !== 'undefined' && qrDataUrl) { %>
+            <div class="footer-qr">
+                <img src="<%= qrDataUrl %>" alt="QR">
+                <small>Escanea</small>
+            </div>
+            <% } %>
             <img src="https://surtitodoideal.com/7f498de1-fb56-4ce2-b2dc-404a582d6427.png" alt="Surtitodo Ideal" class="footer-logo-img" onerror="this.src='https://api.surtitodoideal.com/static/icon.png'">
         </div>
 

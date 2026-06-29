@@ -12,9 +12,7 @@ public/oferta.mp4
 
 # Archivos temporales de datos que genera nuestro panel
 generador-reels/datos-video.json
-data/
-public/campanas/
-public/biblioteca/
+generador-reels/public/voiceovers/
 
 # Logs de errores
 npm-debug.log*

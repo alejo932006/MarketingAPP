@@ -1,5 +1,6 @@
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig, Img, Series, Audio, staticFile, Sequence } from 'remotion';
 import { z } from 'zod';
+import { VoiceoverTrack } from './VoiceoverTrack';
 
 export const productoSchema = z.object({
 	productName: z.string(),
@@ -12,6 +13,8 @@ export const productoSchema = z.object({
 export const promoSchema = z.object({
 	companyUrl: z.string(),
 	productos: z.array(productoSchema),
+	voiceoverUrl: z.string().optional(),
+	reelTitle: z.string().optional(),
 });
 
 // -----------------------------------------------------------------
@@ -202,7 +205,7 @@ const ProductoIndividual: React.FC<z.infer<typeof productoSchema>> = ({ productN
 // -----------------------------------------------------------------
 // 🎥 COMPONENTE B: EL DIRECTOR (Con capas de profundidad y footer gigante)
 // -----------------------------------------------------------------
-export const PromoReel: React.FC<z.infer<typeof promoSchema>> = ({ companyUrl, productos }) => {
+export const PromoReel: React.FC<z.infer<typeof promoSchema>> = ({ companyUrl, productos, voiceoverUrl, reelTitle }) => {
 	const frame = useCurrentFrame();
 	const { fps } = useVideoConfig();
 
@@ -225,7 +228,8 @@ export const PromoReel: React.FC<z.infer<typeof promoSchema>> = ({ companyUrl, p
 		}}>
 			{/* 🎵 AQUÍ VA LA MÚSICA DE FONDO GLOBAl 🎵 */}
 			{/* volume={0.3} es un 30% de volumen para que no sature */}
-			<Audio src={staticFile('background-music.mp3')} volume={0.3} />
+			<Audio src={staticFile('background-music.mp3')} volume={voiceoverUrl ? 0.12 : 0.3} />
+			<VoiceoverTrack voiceoverUrl={voiceoverUrl} />
 			
 			{/* 🪄 DETALLE 1: CAPA DE FORMAS FLOTANTES EN EL FONDO */}
 			<BackgroundShapes />
@@ -237,7 +241,11 @@ export const PromoReel: React.FC<z.infer<typeof promoSchema>> = ({ companyUrl, p
 				textAlign: 'center', color: 'white', zIndex: 10
 			}}>
 				<h1 style={{ fontSize: '110px', fontWeight: '900', margin: 0, textTransform: 'uppercase', textShadow: '0 15px 35px rgba(0,0,0,0.4)', letterSpacing: '-3px', lineHeight: '0.9' }}>
-					¡OFERTA <span style={{ color: '#FFC300' }}>DESTACADA</span>!
+					{reelTitle ? (
+						<span>{reelTitle}</span>
+					) : (
+						<>¡OFERTA <span style={{ color: '#FFC300' }}>DESTACADA</span>!</>
+					)}
 				</h1>
 			</div>
 
