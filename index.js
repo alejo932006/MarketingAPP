@@ -3,7 +3,6 @@ const puppeteer = require('puppeteer');
 const ejs = require('ejs');
 const path = require('path');
 const os = require('os');
-const { exec } = require('child_process');
 const fs = require('fs');
 const { bundle } = require('@remotion/bundler');
 const { selectComposition, renderMedia } = require('@remotion/renderer');
@@ -30,9 +29,210 @@ function getBaseUrl(req) {
     return `${req.protocol}://${host}`;
 }
 
+function verificarVideoGenerado(filePath) {
+    if (!fs.existsSync(filePath)) {
+        throw new Error('El archivo de video no se generó en el servidor');
+    }
+    const { size } = fs.statSync(filePath);
+    if (size < 10000) {
+        throw new Error(`El video generado es inválido (${size} bytes)`);
+    }
+    return size;
+}
+
 const publicDir = path.join(__dirname, 'public');
 if (!fs.existsSync(publicDir)) {
     fs.mkdirSync(publicDir, { recursive: true });
+}
+
+const REMOTION_ENTRY = path.resolve(__dirname, 'generador-reels/src/index.ts');
+const REMOTION_PUBLIC = path.resolve(__dirname, 'generador-reels/public');
+
+let cachedBundleLocation = null;
+let bundleInFlight = null;
+let renderProgress = { fase: 'idle', porcentaje: 0, mensaje: 'Listo' };
+let renderEnCurso = false;
+
+function getChromeExecutable() {
+    const candidates = [
+        '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+        '/Applications/Chromium.app/Contents/MacOS/Chromium',
+        '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser',
+    ];
+    return candidates.find((candidate) => fs.existsSync(candidate)) || null;
+}
+
+async function launchPuppeteer() {
+    const chromePath = getChromeExecutable();
+    const launchOptions = {
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+    };
+
+    if (chromePath) {
+        launchOptions.executablePath = chromePath;
+    }
+
+    return puppeteer.launch(launchOptions);
+}
+
+function prepararHtmlVolante(html) {
+    const fuenteSistema = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
+    return html
+        .replace(/<link[^>]*fonts\.googleapis\.com[^>]*>\s*/gi, '')
+        .replace(/<link[^>]*fonts\.gstatic\.com[^>]*>\s*/gi, '')
+        .replace(/'Poppins', sans-serif/gi, fuenteSistema)
+        .replace(/"Poppins", sans-serif/gi, fuenteSistema);
+}
+
+function esperar(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function capturarVolante(page, htmlTemplate, orientacion) {
+    const alturaViewport = orientacion === 'historia' ? 1920 : 1350;
+    await page.setViewport({ width: 1080, height: alturaViewport });
+
+    await page.setRequestInterception(true);
+    page.on('request', (request) => {
+        const url = request.url();
+        const tipo = request.resourceType();
+
+        // Fuentes web suelen colgar el render; usamos fuentes del sistema
+        if (
+            tipo === 'font' ||
+            url.includes('fonts.googleapis.com') ||
+            url.includes('fonts.gstatic.com')
+        ) {
+            request.abort();
+            return;
+        }
+
+        request.continue();
+    });
+
+    const htmlListo = prepararHtmlVolante(htmlTemplate);
+
+    // domcontentloaded no espera todas las imágenes — evita timeouts por recursos lentos
+    await page.setContent(htmlListo, { waitUntil: 'domcontentloaded', timeout: 30000 });
+
+    // Esperar imágenes de productos (máx. 12 s en total)
+    await Promise.race([
+        page.evaluate(async () => {
+            const images = Array.from(document.images);
+            await Promise.all(images.map((img) => {
+                if (img.complete && img.naturalHeight > 0) return Promise.resolve();
+                return new Promise((resolve) => {
+                    const done = () => resolve();
+                    img.addEventListener('load', done, { once: true });
+                    img.addEventListener('error', done, { once: true });
+                });
+            }));
+        }),
+        esperar(12000),
+    ]);
+
+    // Margen para fondos CSS decorativos (emojis, unsplash)
+    await esperar(2000);
+
+    return page.screenshot({ type: 'png' });
+}
+
+async function getRemotionBundle() {
+    if (cachedBundleLocation) return cachedBundleLocation;
+    if (bundleInFlight) return bundleInFlight;
+
+    renderProgress = {
+        fase: 'bundle',
+        porcentaje: 5,
+        mensaje: 'Compilando Remotion (solo la 1ª vez, ~1-2 min)...',
+    };
+    console.log('📦 Compilando bundle de Remotion (la primera vez tarda 1-2 min)...');
+
+    bundleInFlight = bundle({
+        entryPoint: REMOTION_ENTRY,
+        publicDir: REMOTION_PUBLIC,
+        webpackOverride: (config) => config,
+    })
+        .then((location) => {
+            cachedBundleLocation = location;
+            console.log('✅ Bundle de Remotion listo');
+            return location;
+        })
+        .finally(() => {
+            bundleInFlight = null;
+        });
+
+    return bundleInFlight;
+}
+
+async function renderizarReel({ compositionId, inputProps, outputLocation, frameRange }) {
+    if (renderEnCurso) {
+        throw new Error('Ya hay un video renderizándose. Espera a que termine.');
+    }
+
+    renderEnCurso = true;
+    const chromePath = getChromeExecutable();
+
+    try {
+        const bundleLocation = await getRemotionBundle();
+
+        renderProgress = {
+            fase: 'composicion',
+            porcentaje: 15,
+            mensaje: 'Preparando Chrome y composición...',
+        };
+        console.log(`🎞️  Composición: ${compositionId}`);
+
+        const composition = await selectComposition({
+            serveUrl: bundleLocation,
+            id: compositionId,
+            inputProps,
+            browserExecutable: chromePath || undefined,
+        });
+
+        const hilos = Math.min(Math.max(os.cpus().length - 1, 2), 6);
+        const renderOptions = {
+            composition,
+            serveUrl: bundleLocation,
+            codec: 'h264',
+            outputLocation,
+            inputProps,
+            concurrency: hilos,
+            browserExecutable: chromePath || undefined,
+            onProgress: ({ progress }) => {
+                const pctRender = Math.round(progress * 100);
+                const pctTotal = Math.round(20 + progress * 75);
+                renderProgress = {
+                    fase: 'render',
+                    porcentaje: pctTotal,
+                    mensaje: `Renderizando frames... ${pctRender}%`,
+                };
+            },
+        };
+
+        if (frameRange) {
+            renderOptions.frameRange = frameRange;
+        }
+
+        renderProgress = {
+            fase: 'render',
+            porcentaje: 20,
+            mensaje: `Renderizando con ${hilos} núcleos...`,
+        };
+        console.log(`🎬 Renderizando video (${hilos} hilos)...`);
+
+        await renderMedia(renderOptions);
+
+        renderProgress = {
+            fase: 'finalizando',
+            porcentaje: 98,
+            mensaje: 'Guardando archivo MP4...',
+        };
+    } finally {
+        renderEnCurso = false;
+        renderProgress = { fase: 'idle', porcentaje: 0, mensaje: 'Listo' };
+    }
 }
 
 const app = express();
@@ -44,6 +244,20 @@ app.use(express.static(path.join(__dirname, 'generador-reels', 'public')));
 // 1. Ruta para mostrar el Panel de Control
 app.get('/', (req, res) => {
     res.render('panel');
+});
+
+app.get('/videos/:filename', (req, res) => {
+    const filename = path.basename(req.params.filename);
+    if (!/^[\w.-]+\.mp4$/.test(filename)) {
+        return res.status(400).json({ error: 'Archivo no válido' });
+    }
+    const filePath = path.join(publicDir, filename);
+    if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ error: 'Video no encontrado' });
+    }
+    res.setHeader('Content-Type', 'video/mp4');
+    res.setHeader('Accept-Ranges', 'bytes');
+    res.sendFile(filePath);
 });
 
 // 2. Ruta POST que recibe los IDs seleccionados y toma la foto
@@ -112,20 +326,15 @@ app.post('/generar-volante', async (req, res) => {
             orientacion: orientacion || 'feed' // <-- LO PASAMOS A LA PLANTILLA
         });
 
-        const browser = await puppeteer.launch({ headless: "new" });
-        const page = await browser.newPage();
-        
-        // 2. MAGIA: AJUSTAMOS EL TAMAÑO DE LA CÁMARA SEGÚN LA OPCIÓN
-        const alturaViewport = orientacion === 'historia' ? 1920 : 1350;
-        await page.setViewport({ width: 1080, height: alturaViewport });
-        
-        await page.setContent(htmlTemplate, { waitUntil: 'networkidle0' });
-
-        const imageBuffer = await page.screenshot({ type: 'png' });
-        await browser.close();
-
-        res.set('Content-Type', 'image/png');
-        res.send(imageBuffer);
+        const browser = await launchPuppeteer();
+        try {
+            const page = await browser.newPage();
+            const imageBuffer = await capturarVolante(page, htmlTemplate, orientacion);
+            res.set('Content-Type', 'image/png');
+            res.send(imageBuffer);
+        } finally {
+            await browser.close();
+        }
 
     } catch (error) {
         console.error('❌ Error:', error);
@@ -225,28 +434,24 @@ app.post('/generar-video', async (req, res) => {
             companyUrl: "surtitodoideal.com" 
         };
 
-        const remotionFolder = path.join(__dirname, 'generador-reels');
-        const propsPath = path.join(remotionFolder, 'datos-video.json');
-        fs.writeFileSync(propsPath, JSON.stringify(videoProps));
-
-        const videoSalida = path.join(__dirname, 'public', 'oferta.mp4'); 
         const idComposicion = plantillaVideo || 'PromoReel';
+        const nombreVideo = `reel_${idComposicion}_${Date.now()}.mp4`;
+        const outputLocation = path.join(publicDir, nombreVideo);
 
-        // 🚀 MODIFICACIÓN DEL COMANDO:
-        const comando = `npx remotion render src/index.ts ${idComposicion} "${videoSalida}" --props=./datos-video.json --frames=0-${framesTotales - 1}`;
-        exec(comando, { cwd: remotionFolder }, (error, stdout, stderr) => {
-            if (error) {
-                console.error(`Error renderizando video: ${error.message}`);
-                return res.status(500).send('Error al generar el video');
-            }
-            
-            console.log(`✅ Video de ${framesTotales} frames generado con éxito! (${plantillaVideo})`);
-            res.json({ urlVideo: '/oferta.mp4' }); 
+        await renderizarReel({
+            compositionId: idComposicion,
+            inputProps: videoProps,
+            outputLocation,
+            frameRange: [0, framesTotales - 1],
         });
 
+        const tamano = verificarVideoGenerado(outputLocation);
+        console.log(`✅ Video de ${framesTotales} frames generado (${(tamano / 1024 / 1024).toFixed(1)} MB) — ${nombreVideo}`);
+        res.json({ urlVideo: `/videos/${nombreVideo}`, nombreArchivo: nombreVideo });
+
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Error en el servidor');
+        console.error('❌ Error renderizando video:', error);
+        res.status(500).json({ error: error.message || 'Error al generar el video' });
     }
 });
 
@@ -264,33 +469,18 @@ app.post('/render-tutorial', async (req, res) => {
             videoFileName: 'tutorial.mp4' // Debe coincidir con el archivo en tu carpeta public
         };
 
-        // 3. Empaquetamos el proyecto de Remotion
-        const bundleLocation = await bundle({
-            entryPoint: path.resolve('./generador-reels/src/index.ts'), // Ajusta la ruta a tu Root/index
-            webpackOverride: (config) => config,
-        });
+        const nombreVideo = `tutorial_${Date.now()}.mp4`;
+        const outputLocation = path.join(publicDir, nombreVideo);
 
-        // 4. Obtenemos la composición para saber cuánto dura (1260 frames)
-        const composition = await selectComposition({
-            serveUrl: bundleLocation,
-            id: compositionId,
+        await renderizarReel({
+            compositionId,
             inputProps,
-        });
-
-        // 5. Renderizamos y guardamos el MP4 final
-        const outputLocation = path.resolve('./public/tutorial_final.mp4'); 
-        
-        await renderMedia({
-            composition,
-            serveUrl: bundleLocation,
-            codec: 'h264',
             outputLocation,
-            inputProps,
-            concurrency: 1,
         });
 
+        verificarVideoGenerado(outputLocation);
         console.log("✅ ¡Video Tutorial renderizado con éxito!");
-        res.json({ success: true, message: 'Video creado', url: '/tutorial_final.mp4' });
+        res.json({ success: true, message: 'Video creado', url: `/videos/${nombreVideo}` });
 
     } catch (error) {
         console.error("❌ Error renderizando el tutorial:", error);
@@ -334,37 +524,27 @@ app.post('/generar-reel-cliente', upload.single('clientFoto'), async (req, res) 
             logoImageUrl: 'https://api.surtitodoideal.com/static/icon.png'
         };
 
-        // 2. SOLUCIÓN A LA RUTA DE REMOTION: Ahora apunta a la carpeta generador-reels
-        const bundleLocation = await bundle({
-            entryPoint: path.resolve('./generador-reels/src/index.ts'),
-            webpackOverride: (config) => config,
-        });
-        
-        const composition = await selectComposition({
-            serveUrl: bundleLocation,
-            id: 'OfferWonReel1', 
-            inputProps,
-        });
-
         const nombreVideo = `reel_cliente_${Date.now()}.mp4`;
-        const outputLocation = path.resolve(`./public/${nombreVideo}`); 
-        
-        await renderMedia({
-            composition,
-            serveUrl: bundleLocation,
-            codec: 'h264',
-            outputLocation,
+        const outputLocation = path.join(publicDir, nombreVideo);
+
+        await renderizarReel({
+            compositionId: 'OfferWonReel1',
             inputProps,
-            concurrency: 1,
+            outputLocation,
         });
 
+        verificarVideoGenerado(outputLocation);
         console.log("✅ ¡Reel de cliente renderizado con éxito!");
-        res.json({ success: true, message: 'Video creado', url: `/${nombreVideo}` });
+        res.json({ success: true, message: 'Video creado', url: `/videos/${nombreVideo}` });
 
     } catch (error) {
         console.error("❌ Error renderizando el Reel del cliente:", error);
         res.status(500).json({ success: false, error: error.message });
     }
+});
+
+app.get('/api/render-progress', (req, res) => {
+    res.json(renderProgress);
 });
 
 app.get('/api/server-info', (req, res) => {
@@ -413,4 +593,16 @@ app.listen(PORT, HOST, () => {
     if (ips.length === 0) {
         console.log('   ⚠️  No se detectó IP de red local. Verifica tu conexión WiFi.');
     }
+
+    const chrome = getChromeExecutable();
+    if (chrome) {
+        console.log('   🌐 Chrome detectado — renders más rápidos');
+    } else {
+        console.log('   ⚠️  Instala Google Chrome para acelerar los renders');
+    }
+
+    console.log('   ⏳ Pre-cargando Remotion en segundo plano...');
+    getRemotionBundle()
+        .then(() => console.log('   ✅ Remotion pre-cargado — el primer reel será más rápido'))
+        .catch((err) => console.error('   ❌ Error pre-cargando Remotion:', err.message));
 });

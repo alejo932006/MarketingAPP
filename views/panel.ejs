@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Marketing">
+    <meta name="theme-color" content="#E60000">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <title>Surtitodo Marketing Panel</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;800&display=swap" rel="stylesheet">
     <style>
@@ -438,6 +444,30 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        .progress-bar-wrap {
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            margin: 16px 0 8px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary), #ff4444);
+            border-radius: 4px;
+            transition: width 0.4s ease;
+        }
+
+        #loading-porcentaje {
+            font-size: 13px;
+            color: var(--primary);
+            font-weight: 700;
+            margin: 0;
+        }
+
         .modal-content video {
             width: 100%;
             max-height: 50vh;
@@ -752,7 +782,11 @@
         <div class="loading-box">
             <div class="loading-spinner"></div>
             <p id="loading-text" style="margin: 0; font-weight: 600; color: #333;">Renderizando video...</p>
-            <p style="margin: 10px 0 0; font-size: 12px; color: #888;">No cierres esta pestaña. Puede tardar 1-5 minutos.</p>
+            <div class="progress-bar-wrap">
+                <div id="loading-progress" class="progress-bar-fill"></div>
+            </div>
+            <p id="loading-porcentaje">0%</p>
+            <p id="loading-hint" style="margin: 10px 0 0; font-size: 12px; color: #888;">La Mac hace el trabajo pesado. La 1ª vez puede tardar 2-3 min.</p>
         </div>
     </div>
 
@@ -769,13 +803,35 @@
         const PRODUCTOS_POR_PAGINA = 50;
         let limiteProductos = 4;
         let inventarioEstancados = [];
+        let intervaloProgreso = null;
 
         function mostrarCarga(mensaje) {
             document.getElementById('loading-text').innerText = mensaje || 'Renderizando video...';
+            document.getElementById('loading-progress').style.width = '0%';
+            document.getElementById('loading-porcentaje').innerText = '0%';
             document.getElementById('loading-overlay').classList.add('visible');
+
+            if (intervaloProgreso) clearInterval(intervaloProgreso);
+            intervaloProgreso = setInterval(async () => {
+                try {
+                    const res = await fetch('/api/render-progress');
+                    const data = await res.json();
+                    if (data.mensaje) {
+                        document.getElementById('loading-text').innerText = data.mensaje;
+                    }
+                    if (data.porcentaje > 0) {
+                        document.getElementById('loading-progress').style.width = data.porcentaje + '%';
+                        document.getElementById('loading-porcentaje').innerText = data.porcentaje + '%';
+                    }
+                } catch (e) { /* silencioso */ }
+            }, 1500);
         }
 
         function ocultarCarga() {
+            if (intervaloProgreso) {
+                clearInterval(intervaloProgreso);
+                intervaloProgreso = null;
+            }
             document.getElementById('loading-overlay').classList.remove('visible');
         }
 
@@ -808,19 +864,24 @@
 
         async function mostrarVideo(url, nombreArchivo) {
             urlVideoActual = url;
-            const video = document.getElementById('video-resultado');
-            const cacheBust = url.includes('?') ? '&' : '?';
-            video.src = url + cacheBust + 't=' + Date.now();
-
-            document.getElementById('btn-descargar-video').href = url;
-            document.getElementById('btn-descargar-video').download = nombreArchivo || 'reel_surtitodo.mp4';
-
-            try {
-                const res = await fetch(url);
-                blobVideoActual = await res.blob();
-            } catch (e) {
-                blobVideoActual = null;
+            const res = await fetch(url);
+            if (!res.ok) {
+                throw new Error('No se pudo cargar el video del servidor (archivo no encontrado)');
             }
+
+            const contentType = res.headers.get('content-type') || '';
+            blobVideoActual = await res.blob();
+
+            if (blobVideoActual.size < 10000 || contentType.includes('text/html') || contentType.includes('application/json')) {
+                throw new Error('El servidor no devolvió un video válido. Revisa la consola de la Mac.');
+            }
+
+            const blobUrl = URL.createObjectURL(blobVideoActual);
+            const video = document.getElementById('video-resultado');
+            video.src = blobUrl;
+
+            document.getElementById('btn-descargar-video').href = blobUrl;
+            document.getElementById('btn-descargar-video').download = nombreArchivo || 'reel_surtitodo.mp4';
 
             document.getElementById('modal-video').style.display = 'flex';
         }
@@ -829,8 +890,12 @@
             document.getElementById('modal-video').style.display = 'none';
             const video = document.getElementById('video-resultado');
             video.pause();
+            if (video.src && video.src.startsWith('blob:')) {
+                URL.revokeObjectURL(video.src);
+            }
             video.removeAttribute('src');
             video.load();
+            blobVideoActual = null;
         }
 
         async function compartirVideo() {
@@ -1213,13 +1278,15 @@
                 if (res.ok) {
                     const data = await res.json();
                     const fecha = new Date().toISOString().slice(0, 10);
-                    await mostrarVideo(data.urlVideo, `Reel_${plantillaVideo}_${fecha}.mp4`);
+                    const nombre = data.nombreArchivo || `Reel_${plantillaVideo}_${fecha}.mp4`;
+                    await mostrarVideo(data.urlVideo, nombre);
                 } else {
-                    alert("Hubo un error al generar el video. Revisa la consola del servidor.");
+                    const err = await res.json().catch(() => ({}));
+                    alert(err.error || "Hubo un error al generar el video. Revisa la consola del servidor.");
                 }
             } catch (error) {
                 console.error(error);
-                alert("Error de conexión con el servidor.");
+                alert(error.message || "Error de conexión con el servidor.");
             } finally {
                 ocultarCarga();
                 btn.disabled = false;
@@ -1268,11 +1335,11 @@
                 if(data.success) {
                     await mostrarVideo(data.url, 'tutorial_surtitodo.mp4');
                 } else {
-                    alert("Hubo un error al generar el tutorial. Revisa la consola de tu servidor.");
+                    alert(data.error || "Hubo un error al generar el tutorial. Revisa la consola de tu servidor.");
                 }
             } catch(error) {
                 console.error(error);
-                alert("Error de conexión con el servidor.");
+                alert(error.message || "Error de conexión con el servidor.");
             } finally {
                 ocultarCarga();
                 btn.innerText = textoOriginal;
@@ -1311,11 +1378,11 @@
                     const fecha = new Date().toISOString().slice(0, 10);
                     await mostrarVideo(data.url, `Reel_Cliente_${fecha}.mp4`);
                 } else {
-                    alert("Hubo un error al generar el Reel: " + data.error);
+                    alert("Hubo un error al generar el Reel: " + (data.error || 'Error desconocido'));
                 }
             } catch(error) {
                 console.error(error);
-                alert("Error de conexión con el servidor.");
+                alert(error.message || "Error de conexión con el servidor.");
             } finally {
                 ocultarCarga();
                 btn.innerText = textoOriginal;
