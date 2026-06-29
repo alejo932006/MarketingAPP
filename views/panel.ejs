@@ -2,6 +2,9 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Surtitodo Marketing Panel</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;800&display=swap" rel="stylesheet">
     <style>
@@ -364,6 +367,169 @@
         body.dark-theme .form-group label {
             color: #e0e0e0; 
         }
+
+        /* --- iPad / móvil --- */
+        .network-banner {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #a8dadc;
+            padding: 12px 16px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            font-size: 13px;
+            line-height: 1.5;
+            border: 1px solid #2a3a5c;
+        }
+
+        .network-banner strong { color: #f1faee; }
+        .network-banner code {
+            background: rgba(255,255,255,0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            word-break: break-all;
+        }
+
+        .ios-hint {
+            display: none;
+            background: #fff8e6;
+            border: 1px solid #ffd666;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 12px;
+            color: #664d03;
+            margin-top: 10px;
+            text-align: left;
+            line-height: 1.4;
+        }
+
+        .ios-hint.visible { display: block; }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .loading-overlay.visible { display: flex; }
+
+        .loading-box {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 320px;
+            width: 90%;
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #f0f0f0;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .modal-content video {
+            width: 100%;
+            max-height: 50vh;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            background: #000;
+        }
+
+        .modal-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 900px) {
+            body { padding: 12px 12px 140px 12px; }
+
+            .header { padding: 20px 16px; }
+            .header h1 { font-size: 1.25rem; }
+
+            .config-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .inventory-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .tabs button {
+                flex: 1;
+                min-width: calc(50% - 5px);
+                padding: 12px 10px;
+                font-size: 13px;
+            }
+
+            .search-box {
+                min-width: 100% !important;
+                max-width: 100%;
+            }
+
+            .grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 12px;
+            }
+
+            .card { padding: 10px; }
+            .card img { width: 90px; height: 90px; }
+
+            .bottom-action-bar {
+                flex-direction: column;
+                padding: 12px 16px;
+                gap: 10px;
+            }
+
+            .action-group {
+                flex-direction: column;
+                width: 100%;
+                border-radius: 12px;
+                padding: 12px;
+            }
+
+            .action-group select {
+                width: 100% !important;
+                min-width: unset !important;
+            }
+
+            .btn-action {
+                width: 100%;
+                padding: 14px 20px;
+                font-size: 15px;
+            }
+
+            #btn-generar { width: 100%; }
+
+            .modal-content {
+                padding: 20px;
+                max-height: 95vh;
+                overflow-y: auto;
+            }
+        }
+
+        @media (hover: none) {
+            .card:hover { transform: none; }
+            .btn-primary:hover, .btn-dark:hover { transform: none; }
+        }
     </style>
 </head>
 <body>
@@ -375,6 +541,11 @@
         
         <h1>⚙️ Panel de Marketing Surtitodo</h1>
         <p>Generador Automático de Contenido Digital</p>
+    </div>
+
+    <div id="network-banner" class="network-banner" style="display: none;">
+        <strong>📱 Acceso desde iPad:</strong> Conecta tu iPad a la misma WiFi y abre Safari en<br>
+        <code id="ipad-url">cargando...</code>
     </div>
 
     <div class="config-layout">
@@ -545,9 +716,13 @@
             <h2 style="margin-top: 0; color: var(--secondary);">¡Diseño Listo! 🎉</h2>
             <img id="imagen-resultado" src="" alt="Volante">
             
-            <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
+            <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 10px; flex-wrap: wrap;">
                 <a id="btn-descargar" class="btn-action btn-primary" style="text-decoration: none; display: inline-block;" href="#" download="volante.png">⬇️ Descargar Imagen</a>
+                <button id="btn-compartir-imagen" class="btn-action btn-dark" style="display: none;" onclick="compartirImagen()">📤 Guardar en iPad</button>
                 <button class="btn-action" style="background: #e0e0e0; color: #333;" onclick="cerrarModal()">Cerrar</button>
+            </div>
+            <div id="hint-imagen-ios" class="ios-hint">
+                💡 En iPad: también puedes <strong>mantener pulsada</strong> la imagen y elegir <strong>"Guardar en Fotos"</strong>.
             </div>
             
             <div style="text-align: left; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px dashed #ccc;">
@@ -558,7 +733,35 @@
         </div>
     </div>
 
+    <div id="modal-video" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-top: 0; color: var(--secondary);">¡Reel Listo! 🎬</h2>
+            <video id="video-resultado" controls playsinline></video>
+            <div class="modal-actions">
+                <button id="btn-compartir-video" class="btn-action btn-primary" onclick="compartirVideo()">📤 Guardar en iPad</button>
+                <a id="btn-descargar-video" class="btn-action btn-dark" style="text-decoration: none; display: inline-block;" href="#" download="reel.mp4">⬇️ Descargar</a>
+                <button class="btn-action" style="background: #e0e0e0; color: #333;" onclick="cerrarModalVideo()">Cerrar</button>
+            </div>
+            <div id="hint-video-ios" class="ios-hint visible">
+                💡 En iPad: pulsa <strong>"Guardar en iPad"</strong> para enviarlo a Fotos o Archivos. También puedes mantener pulsado el video → <strong>Compartir</strong>.
+            </div>
+        </div>
+    </div>
+
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-box">
+            <div class="loading-spinner"></div>
+            <p id="loading-text" style="margin: 0; font-weight: 600; color: #333;">Renderizando video...</p>
+            <p style="margin: 10px 0 0; font-size: 12px; color: #888;">No cierres esta pestaña. Puede tardar 1-5 minutos.</p>
+        </div>
+    </div>
+
     <script>
+        const esDispositivoIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        let urlImagenActual = null;
+        let urlVideoActual = null;
+        let blobImagenActual = null;
+        let blobVideoActual = null;
         let inventarioGlobal = [];
         let idsSeleccionados = [];
         let pestanaActual = 'ofertas';
@@ -566,6 +769,117 @@
         const PRODUCTOS_POR_PAGINA = 50;
         let limiteProductos = 4;
         let inventarioEstancados = [];
+
+        function mostrarCarga(mensaje) {
+            document.getElementById('loading-text').innerText = mensaje || 'Renderizando video...';
+            document.getElementById('loading-overlay').classList.add('visible');
+        }
+
+        function ocultarCarga() {
+            document.getElementById('loading-overlay').classList.remove('visible');
+        }
+
+        async function cargarInfoServidor() {
+            try {
+                const res = await fetch('/api/server-info');
+                const info = await res.json();
+                const esLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+                const banner = document.getElementById('network-banner');
+                const ipadUrl = document.getElementById('ipad-url');
+
+                if (esLocalhost && info.localIPs && info.localIPs.length > 0) {
+                    const url = `http://${info.localIPs[0]}:${info.port}`;
+                    ipadUrl.textContent = url;
+                    banner.style.display = 'block';
+                } else if (!esLocalhost) {
+                    ipadUrl.textContent = info.baseUrl;
+                    banner.innerHTML = '<strong>✅ Conectado desde red local</strong> — ' + info.baseUrl;
+                    banner.style.display = 'block';
+                }
+
+                if (esDispositivoIOS) {
+                    document.getElementById('btn-compartir-imagen').style.display = 'inline-block';
+                    document.getElementById('hint-imagen-ios').classList.add('visible');
+                }
+            } catch (e) {
+                console.warn('No se pudo cargar info del servidor');
+            }
+        }
+
+        async function mostrarVideo(url, nombreArchivo) {
+            urlVideoActual = url;
+            const video = document.getElementById('video-resultado');
+            const cacheBust = url.includes('?') ? '&' : '?';
+            video.src = url + cacheBust + 't=' + Date.now();
+
+            document.getElementById('btn-descargar-video').href = url;
+            document.getElementById('btn-descargar-video').download = nombreArchivo || 'reel_surtitodo.mp4';
+
+            try {
+                const res = await fetch(url);
+                blobVideoActual = await res.blob();
+            } catch (e) {
+                blobVideoActual = null;
+            }
+
+            document.getElementById('modal-video').style.display = 'flex';
+        }
+
+        function cerrarModalVideo() {
+            document.getElementById('modal-video').style.display = 'none';
+            const video = document.getElementById('video-resultado');
+            video.pause();
+            video.removeAttribute('src');
+            video.load();
+        }
+
+        async function compartirVideo() {
+            if (!blobVideoActual && urlVideoActual) {
+                try {
+                    const res = await fetch(urlVideoActual);
+                    blobVideoActual = await res.blob();
+                } catch (e) {
+                    alert('No se pudo preparar el video. Intenta abrirlo en una nueva pestaña.');
+                    return;
+                }
+            }
+            if (!blobVideoActual) return;
+
+            const nombre = document.getElementById('btn-descargar-video').download || 'reel_surtitodo.mp4';
+            const file = new File([blobVideoActual], nombre, { type: 'video/mp4' });
+
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({ files: [file], title: 'Reel Surtitodo' });
+                    return;
+                } catch (e) {
+                    if (e.name !== 'AbortError') console.warn(e);
+                }
+            }
+
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blobVideoActual);
+            link.download = nombre;
+            link.click();
+            alert('💡 Mantén pulsado el video de arriba y elige "Compartir" → "Guardar video" para guardarlo en Fotos.');
+        }
+
+        async function compartirImagen() {
+            if (!blobImagenActual) return;
+            const nombre = document.getElementById('btn-descargar').download || 'volante.png';
+            const file = new File([blobImagenActual], nombre, { type: 'image/png' });
+
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({ files: [file], title: 'Volante Surtitodo' });
+                    return;
+                } catch (e) {
+                    if (e.name !== 'AbortError') console.warn(e);
+                }
+            }
+
+            alert('💡 Mantén pulsada la imagen y elige "Guardar en Fotos".');
+        }
 
         function poblarLineas() {
             const selectLinea = document.getElementById('filtro-linea');
@@ -769,6 +1083,7 @@
                 if (!res.ok) throw new Error('Error en el servidor');
 
                 const blob = await res.blob();
+                blobImagenActual = blob;
                 const imageUrl = URL.createObjectURL(blob);
                 
                 document.getElementById('imagen-resultado').src = imageUrl;
@@ -885,7 +1200,9 @@
             }
 
             const plantillaVideo = document.getElementById('selector-plantilla-video').value;
-            document.getElementById('cargando-video').style.display = 'block';
+            const btn = document.getElementById('btn-generar-video');
+            btn.disabled = true;
+            mostrarCarga('🎬 Renderizando reel a 60fps...');
             
             try {
                 const res = await fetch('/generar-video', {
@@ -895,16 +1212,17 @@
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    document.getElementById('cargando-video').style.display = 'none';
-                    window.open(data.urlVideo, '_blank');
+                    const fecha = new Date().toISOString().slice(0, 10);
+                    await mostrarVideo(data.urlVideo, `Reel_${plantillaVideo}_${fecha}.mp4`);
                 } else {
                     alert("Hubo un error al generar el video. Revisa la consola del servidor.");
-                    document.getElementById('cargando-video').style.display = 'none';
                 }
             } catch (error) {
                 console.error(error);
                 alert("Error de conexión con el servidor.");
-                document.getElementById('cargando-video').style.display = 'none';
+            } finally {
+                ocultarCarga();
+                btn.disabled = false;
             }
         }
 
@@ -939,18 +1257,16 @@
         async function generarTutorial() {
             const btn = document.getElementById('btn-tutorial');
             const textoOriginal = btn.innerText;
-            btn.innerText = '⏳ Renderizando (Tomará unos segundos)...';
+            btn.innerText = '⏳ Renderizando...';
             btn.disabled = true;
+            mostrarCarga('📱 Generando reel tutorial...');
 
             try {
-                // Llama a la ruta que creamos en tu servidor Node (index.js)
                 const res = await fetch('/render-tutorial', { method: 'POST' });
                 const data = await res.json();
                 
                 if(data.success) {
-                    alert("✅ ¡Video Tutorial generado con éxito!");
-                    // Abre el video en una nueva pestaña para que lo veas/descargues
-                    window.open(data.url, '_blank');
+                    await mostrarVideo(data.url, 'tutorial_surtitodo.mp4');
                 } else {
                     alert("Hubo un error al generar el tutorial. Revisa la consola de tu servidor.");
                 }
@@ -958,6 +1274,7 @@
                 console.error(error);
                 alert("Error de conexión con el servidor.");
             } finally {
+                ocultarCarga();
                 btn.innerText = textoOriginal;
                 btn.disabled = false;
             }
@@ -975,11 +1292,11 @@
             }
 
             const textoOriginal = btn.innerText;
-            btn.innerText = '⏳ Subiendo y Renderizando (Tomará un minuto)...';
+            btn.innerText = '⏳ Subiendo y renderizando...';
             btn.disabled = true;
             btn.style.background = '#666';
+            mostrarCarga('🎉 Generando reel del cliente...');
 
-            // FormData es necesario porque estamos enviando un archivo (imagen)
             const formData = new FormData(form);
 
             try {
@@ -991,8 +1308,8 @@
                 const data = await res.json();
                 
                 if(data.success) {
-                    alert("✅ ¡Reel Pro generado con éxito!");
-                    window.open(data.url, '_blank');
+                    const fecha = new Date().toISOString().slice(0, 10);
+                    await mostrarVideo(data.url, `Reel_Cliente_${fecha}.mp4`);
                 } else {
                     alert("Hubo un error al generar el Reel: " + data.error);
                 }
@@ -1000,12 +1317,14 @@
                 console.error(error);
                 alert("Error de conexión con el servidor.");
             } finally {
+                ocultarCarga();
                 btn.innerText = textoOriginal;
                 btn.disabled = false;
                 btn.style.background = '#E60000';
             }
         }
 
+        cargarInfoServidor();
         cargarDatos();
     </script>
 </body>

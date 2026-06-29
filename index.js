@@ -2,16 +2,43 @@ const express = require('express');
 const puppeteer = require('puppeteer');
 const ejs = require('ejs');
 const path = require('path');
+const os = require('os');
 const { exec } = require('child_process');
 const fs = require('fs');
 const { bundle } = require('@remotion/bundler');
 const { selectComposition, renderMedia } = require('@remotion/renderer');
 const multer = require('multer');
 
+const PORT = 4000;
+const HOST = '0.0.0.0';
+
+function getLocalIPs() {
+    const interfaces = os.networkInterfaces();
+    const ips = [];
+    for (const name of Object.keys(interfaces)) {
+        for (const iface of interfaces[name]) {
+            if (iface.family === 'IPv4' && !iface.internal) {
+                ips.push(iface.address);
+            }
+        }
+    }
+    return ips;
+}
+
+function getBaseUrl(req) {
+    const host = req.get('host') || `localhost:${PORT}`;
+    return `${req.protocol}://${host}`;
+}
+
+const publicDir = path.join(__dirname, 'public');
+if (!fs.existsSync(publicDir)) {
+    fs.mkdirSync(publicDir, { recursive: true });
+}
+
 const app = express();
 app.set('view engine', 'ejs');
-// Middleware para poder recibir JSON desde el panel
 app.use(express.json());
+app.use(express.static(publicDir));
 app.use(express.static(path.join(__dirname, 'generador-reels', 'public')));
 
 // 1. Ruta para mostrar el Panel de Control
@@ -299,11 +326,12 @@ app.post('/generar-reel-cliente', upload.single('clientFoto'), async (req, res) 
         const { clientName, propertyAddress } = req.body;
         const fotoRuta = `/uploads/${req.file.filename}`; 
         
+        const baseUrl = getBaseUrl(req);
         const inputProps = {
             clientName: clientName || "CLIENTE FELIZ",
             propertyAddress: propertyAddress || "Surtitodo",
-            clientImageUrl: `http://localhost:4000${fotoRuta}`,
-            logoImageUrl: `http://localhost:4000/icon.png`
+            clientImageUrl: `${baseUrl}${fotoRuta}`,
+            logoImageUrl: 'https://api.surtitodoideal.com/static/icon.png'
         };
 
         // 2. SOLUCIÓN A LA RUTA DE REMOTION: Ahora apunta a la carpeta generador-reels
@@ -339,6 +367,14 @@ app.post('/generar-reel-cliente', upload.single('clientFoto'), async (req, res) 
     }
 });
 
+app.get('/api/server-info', (req, res) => {
+    res.json({
+        baseUrl: getBaseUrl(req),
+        localIPs: getLocalIPs(),
+        port: PORT
+    });
+});
+
 // --- NUEVO PUENTE (PROXY) PARA EVITAR CORS ---
 app.get('/api/local-products', async (req, res) => {
     try {
@@ -369,6 +405,12 @@ app.get('/api/local-estancados', async (req, res) => {
     }
 });
 
-app.listen(4000, () => {
-    console.log('🚀 Panel de Marketing listo! Entra a: http://localhost:4000');
+app.listen(PORT, HOST, () => {
+    const ips = getLocalIPs();
+    console.log('🚀 Panel de Marketing listo!');
+    console.log(`   💻 Mac:  http://localhost:${PORT}`);
+    ips.forEach((ip) => console.log(`   📱 iPad: http://${ip}:${PORT}`));
+    if (ips.length === 0) {
+        console.log('   ⚠️  No se detectó IP de red local. Verifica tu conexión WiFi.');
+    }
 });

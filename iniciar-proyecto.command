@@ -8,7 +8,7 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 
 osascript <<EOF
 tell application "Terminal"
-    do script "cd '$PROJECT_DIR' && node index.js"
+    do script "cd '$PROJECT_DIR' && echo '📱 Al arrancar, busca la línea iPad: http://... en la consola' && node index.js"
     do script "cd '$PROJECT_DIR/generador-reels' && npm run dev"
     activate
 end tell
